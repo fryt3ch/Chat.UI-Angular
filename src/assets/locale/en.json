@@ -1,0 +1,14 @@
+{
+	"common": {
+		"username": "Username",
+		"password": "Password"
+	},
+	"signIn": {
+		"title": "Sign in to your account",
+		"forgotPassword": "Forgot password?",
+		"rememberMe": "Remember me",
+		"signIn": "Sign In",
+		"notSignedUp_0": "Don't have an account?",
+		"notSignedUp_1": "Sign up right now!"
+	}
+}

@@ -1,0 +1,2 @@
+C:\Users\fryte\RiderProjects\Chat\Chat.UI\obj\Debug\Chat.UI.esproj.SuggestedBindingRedirects.cache
+C:\Users\fryte\RiderProjects\Chat\Chat.UI\obj\Debug\Chat.UI.esproj.CoreCompileInputs.cache
