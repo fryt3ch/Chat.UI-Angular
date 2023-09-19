@@ -1,0 +1,30 @@
+<ng-container *ngIf="isLoaded; else userLoadingTemplate">
+  <ng-container *ngIf="userProfile as user; else userNotFoundTemplate">
+    <p>Username: {{user.username}}</p>
+    <p>Name: {{user.name}} {{ user.surname }}</p>
+    <p>Birthdate: {{ user.birthDate | date }}</p>
+
+    <img *ngIf="avatarPhotoUrl as photoUrl" [src]="photoUrl" width="200" height="200"/>
+     component
+  </ng-container>
+</ng-container>
+
+<ng-container>
+
+</ng-container>
+
+<ng-template #userLoadingTemplate>
+  <ng-container>
+    <p class="text-center text-lg">Loading</p>
+  </ng-container>
+</ng-template>
+
+<ng-template #userNotFoundTemplate>
+  <ng-container *ngIf="isMyProfile; else userNotFoundTemplate">
+    <app-create-user-profile-page></app-create-user-profile-page>
+  </ng-container>
+
+  <ng-template #userNotFoundTemplate>
+    <app-not-found-page [returnUrl]="previousUrl" [messageTranslation]="'profile.notFound.message'"></app-not-found-page>
+  </ng-template>
+</ng-template>

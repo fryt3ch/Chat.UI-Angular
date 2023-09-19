@@ -22,7 +22,7 @@ export const notSignedInGuard: CanActivateFn = (route, state) => {
   {
     const router = inject(Router);
 
-    return router.parseUrl(`user/${authService.user!.username}`);
+    return router.navigate([`/profile`, authService.user!.username]);
   }
 
   return true;

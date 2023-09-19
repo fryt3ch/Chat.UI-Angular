@@ -1,7 +1,11 @@
 {
 	"common": {
 		"username": "Имя пользователя",
-		"password": "Пароль"
+		"password": "Пароль",
+
+		"validation": {
+			"required": "Это поле не должно быть пустым!"
+		}
 	},
 	"signIn": {
 		"title": "Войдите в свой аккаунт",

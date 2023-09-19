@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
 import {AuthService} from "../../../services/auth/auth.service";
-import {SignInDto} from "../../../models/auth/signInDto";
+import {SignInDto} from "../../../models/auth/sign-in-dto";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {ToastrService} from "ngx-toastr";
-import {catchError, finalize, tap} from "rxjs";
+import {catchError, EMPTY, finalize, of, tap} from "rxjs";
+import {TranslateService} from "@ngx-translate/core";
+import {ApiError} from "../../../models/common/api-result";
 
 @Component({
   selector: 'app-signin-page',
@@ -12,7 +14,7 @@ import {catchError, finalize, tap} from "rxjs";
   styleUrls: ['./signin-page.component.scss']
 })
 export class SignInPageComponent {
-  constructor(protected authService: AuthService, protected router: Router, private toastr: ToastrService) {
+  constructor(protected authService: AuthService, protected router: Router, private toastr: ToastrService, private translateService: TranslateService) {
 
   }
 
@@ -29,27 +31,21 @@ export class SignInPageComponent {
   signInBtnDisabled: boolean = false;
 
   signIn() {
-    var signInDto = new SignInDto();
-
-    signInDto.username = <string>this.signInForm.controls.username.value;
-    signInDto.password = <string>this.signInForm.controls.password.value;
-    signInDto.rememberMe = <boolean>this.signInForm.controls.rememberMe.value;
+    let signInDto: SignInDto = {
+      username: <string>this.signInForm.controls.username.value,
+      password: <string>this.signInForm.controls.password.value,
+      rememberMe: <boolean>this.signInForm.controls.rememberMe.value,
+    };
 
     this.signInBtnDisabled = true;
 
     this.authService.signIn(signInDto)
       .pipe(
-        tap(apiResult => {
-          if (!apiResult.succeeded) {
-            if (apiResult.errors.find(error => error.code == "wrongDataProvided")) {
-              this.toastr.error("Wrong credentials were provided!");
-            }
-          }
+        tap((apiResult) => {
+          console.log("asd")
         }),
-        catchError((err, apiResult) => {
-          this.toastr.error("Something went wrong!");
-
-          return apiResult;
+        catchError((err) => {
+          return of();
         }),
         finalize(() => {
           this.signInBtnDisabled = false;

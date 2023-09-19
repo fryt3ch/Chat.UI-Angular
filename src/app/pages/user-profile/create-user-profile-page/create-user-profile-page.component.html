@@ -1,0 +1,48 @@
+<form [formGroup]="createForm" (ngSubmit)="create()">
+  <div>
+    <label for="name">{{ 'common.name' | translate }}</label>
+    <input [formControl]="createForm.controls.name" id="name" type="text">
+  </div>
+
+  <div>
+    <label for="name">{{ 'common.surname' | translate }}</label>
+    <input [formControl]="createForm.controls.surname" id="surname" type="text">
+  </div>
+
+  <div>
+    <label for="name">{{ 'common.birthDate' | translate }}</label>
+    <input [formControl]="createForm.controls.birthDate" id="birthDate" type="date">
+  </div>
+
+  <div>
+    <label for="country"></label>
+    <select [formControl]="createForm.controls.country" id="country">
+      <option *ngFor="let countryType of countryTypes" [ngValue]="countryType">
+        {{ getCountryFlagEmoji(countryType) }} {{ getCountryNameLocale(countryType) | translate }}
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label for="gender"></label>
+    <select [formControl]="createForm.controls.gender" id="gender">
+      <option *ngFor="let genderType of genderTypes" [ngValue]="genderType">
+        {{ getGenderNameLocale(genderType) | translate }}
+      </option>
+    </select>
+  </div>
+
+  <div class="row" style="margin-bottom:15px;">
+    <div class="col-md-3">
+      <input type="file" accept=".png,.jpg" #file placeholder="Choose file" (change)="chooseFile(file.files)" style="display:none;">
+      <button type="button" class="btn btn-success" (click)="file.click()">Choose avatar</button>
+    </div>
+    <div>
+      <img *ngIf="avatarFileUrl as src" [src]="src" alt="Avatar Image" width="200" height="200">
+    </div>
+  </div>
+
+  <div>
+    <button [disabled]="createForm.invalid" type="submit">{{ "profile.create.create" | translate }}</button>
+  </div>
+</form>

@@ -1,7 +1,0 @@
-<ng-container *ngIf="this.userProfile as user; else productsLoadingTemplate">
-  <p>Username: {{this.user.username}}</p>
-  <p>Name: {{this.user.name}} {{ this.user.surname }}</p>
-  <p>Birthdate: {{ this.user.birthDate }}</p>
-</ng-container>
-
-<ng-template #productsLoadingTemplate><p class="text-center text-lg">Loading</p></ng-template>

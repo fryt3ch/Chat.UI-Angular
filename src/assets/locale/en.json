@@ -1,7 +1,53 @@
 {
 	"common": {
 		"username": "Username",
-		"password": "Password"
+		"password": "Password",
+		"name": "Name",
+		"surname": "Surname",
+		"birthDate": "Date of birth",
+
+		"validation": {
+			"required": "This field shouldn't be empty",
+			"email": "Wrong e-mail",
+			"minLength": "Minimal length of this string is {0}",
+			"maxLength": "Maximal length of this string is {0}",
+			"rangeLength": "Length of this string should be between {0} and {1}"
+		}
+	},
+	"apiErrors": {
+		"wrongUsernameOrPassword": "Wrong username or password!",
+		"usernameExists": "An user with such username already exists!",
+		"emailExists": "An user with such email already exists!"
+	},
+	"countries": {
+		"russia": {
+			"name": "Russia"
+		},
+		"germany": {
+			"name": "Germany"
+		},
+		"unitedStates": {
+			"name": "United States"
+		},
+		"unitedKingdom": {
+			"name": "United Kingdom"
+		}
+	},
+	"genders": {
+		"male": {
+			"name": "Male"
+		},
+		"female": {
+			"name": "Female"
+		}
+	},
+	"pageNotFound": {
+		"message": "Sorry, we couldn't find this page.",
+		"hint": "But don't worry, you can find plenty of other things on our homepage.",
+		"returnBtnText": {
+			"back": "Back",
+			"backToHomePage": "Back to home page"
+		}
 	},
 	"signIn": {
 		"title": "Sign in to your account",
@@ -10,5 +56,22 @@
 		"signIn": "Sign In",
 		"notSignedUp_0": "Don't have an account?",
 		"notSignedUp_1": "Sign up right now!"
+	},
+	"signUp": {
+		"signUp": "Sign Up",
+
+		"success": "You've successfuly signed up!",
+
+		"validation" : {
+			"confirmPasswordNotMatch": "Passwords not match"
+		}
+	},
+	"profile": {
+		"create": {
+			"create": "Create"
+		},
+		"notFound": {
+			"message": "Requested user doesn't exist or didn't complete his profile yet!"
+		}
 	}
 }

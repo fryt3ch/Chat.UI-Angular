@@ -7,16 +7,22 @@ import { SignInPageComponent } from './pages/auth/signin-page/signin-page.compon
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { SignUpPageComponent } from './pages/auth/signup-page/signup-page.component';
-import { UserProfilePageComponent } from './pages/user/user-profile-page/user-profile-page.component';
+import { UserProfilePageComponent } from './pages/user-profile/user-profile-page/user-profile-page.component';
 import {ErrorInterceptor} from "./interceptors/error.interceptor";
 import {InitializerService} from "./services/initializer.service";
 import { ChatPageComponent } from './pages/chat/chat-page/chat-page.component';
-import {LowerCaseUrlSerializer} from "./interceptors/lowercaseUrlSerializer";
-import {UrlSerializer} from "@angular/router";
+import {LowercaseUrlSerializer} from "./interceptors/lowercase-url.serializer";
+import {RouteReuseStrategy as RouteReuseStrategyProvider, UrlSerializer} from "@angular/router";
 import {ToastrModule} from "ngx-toastr";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {TranslateLoader, TranslateModule} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
+import { NotFoundPageComponent } from './pages/errors/not-found-page/not-found-page.component';
+import {RouteReuseStrategy} from "./interceptors/route-reuse.strategy";
+import { CreateUserProfilePageComponent } from './pages/user-profile/create-user-profile-page/create-user-profile-page.component';
+import { CastPipe } from './pipes/cast.pipe';
+import {ApiResultInterceptor} from "./interceptors/api-result.interceptor";
+import { InputFieldComponent } from './components/input-field/input-field.component';
 
 export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
   return new TranslateHttpLoader(http, './assets/locale/', '.json');
@@ -29,6 +35,10 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     SignUpPageComponent,
     UserProfilePageComponent,
     ChatPageComponent,
+    NotFoundPageComponent,
+    CreateUserProfilePageComponent,
+    CastPipe,
+    InputFieldComponent,
   ],
   imports: [
     TranslateModule.forRoot({
@@ -56,9 +66,14 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
-      useClass: ErrorInterceptor,
+      useClass: ApiResultInterceptor,
       multi: true
     },
+/*    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor,
+      multi: true
+    },*/
     {
       provide: APP_INITIALIZER,
       useFactory: (initializerService: InitializerService) => () => initializerService.initialize(),
@@ -67,7 +82,11 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     },
     {
       provide: UrlSerializer,
-      useClass: LowerCaseUrlSerializer
+      useClass: LowercaseUrlSerializer
+    },
+    {
+      provide: RouteReuseStrategyProvider,
+      useClass: RouteReuseStrategy,
     }
   ],
   bootstrap: [AppComponent]
