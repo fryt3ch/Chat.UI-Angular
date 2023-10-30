@@ -1,6 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import {environment} from "../../../../environments/environment";
+import {ChatService} from "../../../services/chat/chat.service";
+import {tap} from "rxjs";
+import {Chat} from "../../../models/chat/chat";
 
 @Component({
   selector: 'app-chat-page',
@@ -8,21 +11,11 @@ import {environment} from "../../../../environments/environment";
   styleUrls: ['./chat-page.component.scss']
 })
 export class ChatPageComponent implements OnInit {
+  constructor(protected chatService: ChatService) {
 
-  constructor() {
   }
+
    ngOnInit() {
-     const connection = new signalR.HubConnectionBuilder()
-       .configureLogging(signalR.LogLevel.Debug)
-       .withUrl("/hubs/chat")
-       .build();
 
-     connection.start()
-       .then(() => {
-         console.log("SignalR connected!");
-       })
-       .catch((err) => {
-         return console.error(err.toString());
-       });
-  }
+   }
 }

@@ -1,0 +1,18 @@
+.emoji-picker-container {
+  position: relative;
+
+  .picker {
+    z-index: 3;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    transform: scale(0.8);
+    right: calc(100% - 65px);
+    transform-origin: bottom right;
+  }
+
+  @media only screen and (min-device-width: 1024px) {
+    .picker {
+      transform: scale(1.0);
+    }
+  }
+}

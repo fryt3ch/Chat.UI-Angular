@@ -1,1 +1,14 @@
-<p>chat-page works!</p>
+<div class="h-screen w-screen overflow-hidden">
+    <p-splitter [minSizes]="[15, 30]" [panelSizes]="[30, 70]" styleClass="h-full w-full rounded-none">
+        <ng-template pTemplate>
+            <div class="w-full">
+                <app-chat-preview-panel></app-chat-preview-panel>
+            </div>
+        </ng-template>
+        <ng-template pTemplate>
+            <div class="w-full">
+                <app-chat-view-panel *ngIf="chatService.selectedChat$ | async as selectedChat" [chat]="selectedChat"></app-chat-view-panel>
+            </div>
+        </ng-template>
+    </p-splitter>
+</div>

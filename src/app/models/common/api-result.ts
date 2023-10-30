@@ -1,8 +1,6 @@
 ﻿export interface ApiResult {
   succeeded: boolean;
-  errors: [
-    ApiResultError
-  ];
+  error: ApiResultError | null;
 
   message: string;
 }
@@ -12,7 +10,7 @@ export interface ApiResultWithData<T> extends ApiResult {
 }
 
 export interface ApiResultError {
-  error: string;
+  message: string;
   code: string;
 }
 
@@ -26,10 +24,10 @@ export class ApiError extends Error {
 }
 
 export function isApiResultError(obj: any): obj is ApiResultError {
-  return typeof obj.error === "string" && typeof obj.code === "string";
+  return typeof obj.message === "string" && typeof obj.code === "string";
 }
 
 export function isApiResult(obj: any): obj is ApiResult {
   return typeof obj.succeeded === "boolean" &&
-    obj.errors && Array.isArray(obj.errors) && obj.errors.every((x: any) => isApiResultError(x));
+    obj.error && isApiResultError(obj.error);
 }

@@ -6,8 +6,11 @@ import {UserProfilePageComponent} from "./pages/user-profile/user-profile-page/u
 import {notSignedInGuard, signedInGuard} from "./interceptors/guards/signed-in.guard";
 import {ChatPageComponent} from "./pages/chat/chat-page/chat-page.component";
 import {NotFoundPageComponent} from "./pages/errors/not-found-page/not-found-page.component";
+import {HomePageComponent} from "./pages/home-page/home-page.component";
 
 const routes: Routes = [
+  { path: '', component: HomePageComponent, },
+
   {
     path: 'auth',
 

@@ -5,8 +5,8 @@ import {
   HttpEvent,
   HttpInterceptor, HttpErrorResponse, HttpResponse
 } from '@angular/common/http';
-import {catchError, finalize, Observable, of, retry, tap, throwError} from 'rxjs';
-import {ApiError, ApiResult, isApiResult} from "../models/common/api-result";
+import {catchError, finalize, map, Observable, of, retry, tap, throwError} from 'rxjs';
+import {ApiError, ApiResult, ApiResultWithData, isApiResult} from "../models/common/api-result";
 import {TranslateService} from "@ngx-translate/core";
 import {ToastrService} from "ngx-toastr";
 
@@ -32,11 +32,11 @@ export class ApiResultInterceptor implements HttpInterceptor {
           }
         }),
         catchError(error => {
-          if (error instanceof  ApiError) {
-            if (error.apiResult.errors.length > 0) {
+          if (error instanceof ApiError) {
+            if (error.apiResult.error) {
               const translateService = this.injector.get(TranslateService);
 
-              translateService.get(`apiErrors.${error.apiResult.errors[0].code}`)
+              translateService.get(`apiErrors.${error.apiResult.error.code}`)
                 .subscribe(x => {
                   this.toastrService.error(x);
                 });

@@ -4,7 +4,11 @@
 		"password": "Password",
 		"name": "Name",
 		"surname": "Surname",
+		"email": "E-mail",
 		"birthDate": "Date of birth",
+		"country": "Country",
+		"gender": "Gender",
+		"loading": "Loading",
 
 		"validation": {
 			"required": "This field shouldn't be empty",
@@ -73,5 +77,8 @@
 		"notFound": {
 			"message": "Requested user doesn't exist or didn't complete his profile yet!"
 		}
+	},
+	"chat": {
+		"enterMessage": "Enter message..."
 	}
 }

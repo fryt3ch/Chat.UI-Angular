@@ -1,69 +1,71 @@
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8 p-component text-[color:var(--text-color)]">
   <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-    <img class="mx-auto h-10 w-auto" src="assets/icons/logo.svg" alt="Your Company">
-    <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign up a new account</h2>
+    <img class="mx-auto h-10 w-auto" src="assets/icons/rounded.png" alt="Logotype">
+    <h2 class="mt-10 text-center text-2xl font-bold">Sign up a new account</h2>
   </div>
 
   <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
     <form class="space-y-6" [formGroup]="signUpForm" (ngSubmit)="signUp()">
       <div>
-        <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+        <label for="username" class="text-sm">{{ 'common.username' | translate }}</label>
         <div class="mt-2">
-          <input formControlName="username" id="username" name="username" type="text" autocomplete="username" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6">
+          <input pInputText formControlName="username" id="username" type="text" autocomplete="username" required class="w-full rounded-md py-1.5">
 
-          <div *ngIf="signUpForm.controls.username.dirty && signUpForm.controls.username.errors as errors" class="mt-2 text-red-600 text-xs">
-            <p *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</p>
-            <p *ngIf="errors['minlength'] as error">{{ ('common.validation.minLength' | translate).format(error['requiredLength']) }}</p>
-            <p *ngIf="errors['maxlength'] as error">{{ ('common.validation.maxLength' | translate).format(error['requiredLength']) }}</p>
+          <div *ngIf="signUpForm.controls.username.dirty && signUpForm.controls.username.errors as errors" class="mt-2 p-error">
+            <small *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</small>
+            <small *ngIf="errors['minlength'] as error">{{ ('common.validation.minLength' | translate).format(error['requiredLength']) }}</small>
+            <small *ngIf="errors['maxlength'] as error">{{ ('common.validation.maxLength' | translate).format(error['requiredLength']) }}</small>
           </div>
         </div>
       </div>
 
       <div>
-        <label for="email" class="block text-sm font-medium leading-6 text-gray-900">E-mail</label>
+        <label for="email" class="text-sm">{{ 'common.email' | translate }}</label>
         <div class="mt-2">
-          <input formControlName="email" id="email" name="username" type="email" autocomplete="email" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6">
+          <input pInputText formControlName="email" id="email" type="email" autocomplete="email" required class="w-full rounded-md py-1.5">
 
-          <div *ngIf="signUpForm.controls.email.dirty && signUpForm.controls.email.errors as errors" class="mt-2 text-red-600 text-xs">
-            <p *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</p>
-            <p *ngIf="errors['pattern']">{{ 'common.validation.email' | translate }}</p>
+          <div *ngIf="signUpForm.controls.email.dirty && signUpForm.controls.email.errors as errors" class="mt-2 p-error">
+            <small *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</small>
+            <small *ngIf="errors['pattern']">{{ 'common.validation.email' | translate }}</small>
           </div>
         </div>
       </div>
 
       <div>
-        <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+        <label for="password" class="text-sm">{{ 'common.password' | translate }}</label>
         <div class="mt-2">
-          <input formControlName="password" id="password" name="password" type="password" autocomplete="password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6">
+          <p-password formControlName="password" id="password" autocomplete="current-password" [toggleMask]="true" inputStyleClass="block w-full rounded-md py-1.5" styleClass="w-full">
+          </p-password>
 
-          <div *ngIf="signUpForm.controls.password.dirty && signUpForm.controls.password.errors as errors" class="mt-2 text-red-600 text-xs">
-            <p *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</p>
-            <p *ngIf="errors['minlength'] as error">{{ ('common.validation.minLength' | translate).format(error['requiredLength']) }}</p>
-            <p *ngIf="errors['maxlength'] as error">{{ ('common.validation.maxLength' | translate).format(error['requiredLength']) }}</p>
+          <div *ngIf="signUpForm.controls.password.dirty && signUpForm.controls.password.errors as errors" class="mt-2 p-error">
+            <small *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</small>
+            <small *ngIf="errors['minlength'] as error">{{ ('common.validation.minLength' | translate).format(error['requiredLength']) }}</small>
+            <small *ngIf="errors['maxlength'] as error">{{ ('common.validation.maxLength' | translate).format(error['requiredLength']) }}</small>
           </div>
         </div>
       </div>
 
       <div>
-        <label for="passwordConfirm" class="block text-sm font-medium leading-6 text-gray-900">Confirm password</label>
+        <label for="passwordConfirm" class="text-sm">Confirm password</label>
         <div class="mt-2">
-          <input formControlName="passwordConfirm" id="passwordConfirm" name="passwordConfirm" type="password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6">
+          <p-password formControlName="passwordConfirm" id="passwordConfirm" autocomplete="current-password" [toggleMask]="true" [feedback]="false" inputStyleClass="block w-full rounded-md py-1.5" styleClass="w-full">
+          </p-password>
 
-          <div *ngIf="signUpForm.controls.passwordConfirm.dirty && signUpForm.controls.passwordConfirm.errors as errors" class="mt-2 text-red-600 text-xs">
-            <p *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</p>
-            <p *ngIf="errors['equalsToControl']">{{ 'signUp.validation.confirmPasswordNotMatch' | translate }}</p>
+          <div *ngIf="signUpForm.controls.passwordConfirm.dirty && signUpForm.controls.passwordConfirm.errors as errors" class="mt-2 p-error">
+            <small *ngIf="errors['required']">{{ 'common.validation.required' | translate }}</small>
+            <small *ngIf="errors['equalsToControl']">{{ 'signUp.validation.confirmPasswordNotMatch' | translate }}</small>
           </div>
         </div>
       </div>
 
       <div>
-        <button [disabled]="signUpForm.invalid || this.signUpBtnDisabled" type="submit" class="flex w-full justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500 disabled:bg-red-500 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">{{ "signUp.signUp" | translate }}</button>
+        <p-button [disabled]="signUpForm.invalid || signUpBtnDisabled" [loading]="signUpBtnDisabled" type="submit" label="{{'signUp.signUp' | translate }}" styleClass="w-full"></p-button>
       </div>
     </form>
 
-    <p class="mt-10 text-center text-sm text-gray-500">
+    <p class="mt-10 text-center text-sm">
       Already have an account?
-      <a (click)="this.router.navigate(['auth/sign-in'])" class="font-semibold leading-6 text-red-600 hover:text-red-500 hover:cursor-pointer">Sign in!</a>
+      <a (click)="this.router.navigate(['auth/sign-in'])" class="font-semibold leading-6 text-[color:var(--primary-color)] hover:text-[color:var(--primary-400)] cursor-pointer">Sign in!</a>
     </p>
   </div>
 </div>

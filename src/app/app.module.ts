@@ -22,7 +22,49 @@ import {RouteReuseStrategy} from "./interceptors/route-reuse.strategy";
 import { CreateUserProfilePageComponent } from './pages/user-profile/create-user-profile-page/create-user-profile-page.component';
 import { CastPipe } from './pipes/cast.pipe';
 import {ApiResultInterceptor} from "./interceptors/api-result.interceptor";
-import { InputFieldComponent } from './components/input-field/input-field.component';
+import {InputTextModule} from "primeng/inputtext";
+import {PasswordModule} from "primeng/password";
+import {CheckboxModule} from "primeng/checkbox";
+import {ButtonModule} from "primeng/button";
+import {AutoFocusModule} from "primeng/autofocus";
+import {DropdownModule} from "primeng/dropdown";
+import {CalendarModule} from "primeng/calendar";
+import {SelectButtonModule} from "primeng/selectbutton";
+import {FileUploadModule} from "primeng/fileupload";
+import { ProgressSpinnerComponent } from './components/progress-spinner/progress-spinner.component';
+import {ProgressSpinnerModule} from "primeng/progressspinner";
+import { HomePageComponent } from './pages/home-page/home-page.component';
+import {ToolbarModule} from "primeng/toolbar";
+import {ToggleButtonModule} from "primeng/togglebutton";
+import {AvatarModule} from "primeng/avatar";
+import {SplitterModule} from "primeng/splitter";
+import { ChatPreviewElementComponent } from './components/chat/chat-preview-element/chat-preview-element.component';
+import { ChatPreviewPanelComponent } from './components/chat/chat-preview-panel/chat-preview-panel.component';
+import { ChatViewPanelComponent } from './components/chat/chat-view-panel/chat-view-panel.component';
+import {VirtualScrollerModule} from "primeng/virtualscroller";
+import {ScrollPanelModule} from "primeng/scrollpanel";
+import {PickListModule} from "primeng/picklist";
+import {ContextMenuModule} from "primeng/contextmenu";
+import {InputTextareaModule} from "primeng/inputtextarea";
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import {
+  ChatMessagesVirtualScrollDirective
+} from "./interceptors/scroll-strategies/chat-messages-virtual-scroll.directive";
+import { ChatMessageComponent } from './components/chat/chat-message/chat-message.component';
+import { ChatMemberAvatarComponent } from './components/chat/chat-member-avatar/chat-member-avatar.component';
+import {SkeletonModule} from "primeng/skeleton";
+import {PickerComponent as EmojiMartPickerComponent} from "@ctrl/ngx-emoji-mart";
+import { EmojiPickerComponent } from './components/emoji-picker/emoji-picker.component';
+import {MenuModule} from "primeng/menu";
+import {
+    AutoSizeVirtualScrollStrategy,
+    RxVirtualFor,
+    RxVirtualScrollViewportComponent
+} from "@rx-angular/template/experimental/virtual-scrolling";
+import {RxLet} from "@rx-angular/template/let";
+import {RxIf} from "@rx-angular/template/if";
+import {BadgeModule} from "primeng/badge";
+import {ConfirmDialogModule} from "primeng/confirmdialog";
 
 export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
   return new TranslateHttpLoader(http, './assets/locale/', '.json');
@@ -38,31 +80,69 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     NotFoundPageComponent,
     CreateUserProfilePageComponent,
     CastPipe,
-    InputFieldComponent,
+    ProgressSpinnerComponent,
+    HomePageComponent,
+    ChatPreviewElementComponent,
+    ChatPreviewPanelComponent,
+    ChatViewPanelComponent,
+    ChatMessagesVirtualScrollDirective,
+    ChatMessageComponent,
+    ChatMemberAvatarComponent,
+    EmojiPickerComponent,
   ],
-  imports: [
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient],
-      },
-      defaultLanguage: "en",
-      useDefaultLang: true,
-    }),
-    BrowserAnimationsModule,
-    ToastrModule.forRoot({
-      timeOut: 7_500,
-      positionClass: 'toast-top-right',
-      preventDuplicates: false,
-    }),
+    imports: [
+        TranslateModule.forRoot({
+            loader: {
+                provide: TranslateLoader,
+                useFactory: HttpLoaderFactory,
+                deps: [HttpClient],
+            },
+            defaultLanguage: "en",
+            useDefaultLang: true,
+        }),
+        BrowserAnimationsModule,
+        ToastrModule.forRoot({
+            timeOut: 7_500,
+            positionClass: 'toast-top-right',
+            preventDuplicates: false,
+        }),
 
-    HttpClientModule,
-    BrowserModule,
-    AppRoutingModule,
-    FormsModule,
-    ReactiveFormsModule
-  ],
+        HttpClientModule,
+        BrowserModule,
+        AppRoutingModule,
+        FormsModule,
+        ReactiveFormsModule,
+        InputTextModule,
+        PasswordModule,
+        CheckboxModule,
+        ButtonModule,
+        AutoFocusModule,
+        DropdownModule,
+        CalendarModule,
+        SelectButtonModule,
+        FileUploadModule,
+        ProgressSpinnerModule,
+        ToolbarModule,
+        ToggleButtonModule,
+        AvatarModule,
+        SplitterModule,
+        VirtualScrollerModule,
+        ScrollPanelModule,
+        PickListModule,
+        ContextMenuModule,
+        InputTextareaModule,
+        ScrollingModule,
+        SkeletonModule,
+        EmojiMartPickerComponent,
+        MenuModule,
+        RxVirtualScrollViewportComponent,
+        RxVirtualFor,
+        AutoSizeVirtualScrollStrategy,
+        RxLet,
+        RxIf,
+        BadgeModule,
+        ConfirmDialogModule
+    ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,

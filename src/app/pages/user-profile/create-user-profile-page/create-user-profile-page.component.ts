@@ -1,16 +1,17 @@
 import {Component, EventEmitter, Output} from '@angular/core';
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Country, getCountryFlagEmoji, getCountryNameLocale} from "../../../models/common/country.enum";
-import {CreateUserProfileDto} from "../../../models/user-profile/create-user-profile-dto";
+import {CreateUserProfileRequestDto} from "../../../models/user-profile/create-user-profile-dto";
 import {UserProfileService} from "../../../services/user-profile/user-profile.service";
 import {catchError, finalize, of, pipe, tap} from "rxjs";
 import {Router} from "@angular/router";
 import {AuthService} from "../../../services/auth/auth.service";
 import {ToastrService} from "ngx-toastr";
-import {UpdateUserProfileAvatarDto} from "../../../models/user-profile/update-user-profile-avatar-dto";
-import {User} from "../../../models/auth/user";
-import {PostPhotoDto} from "../../../models/user-profile/post-photo-dto";
+import {UpdateUserProfileAvatarRequestDto} from "../../../models/user-profile/update-user-profile-avatar-dto";
+import {UserDto} from "../../../models/auth/user-dto";
+import {PostPhotoRequestDto} from "../../../models/user-profile/post-photo-dto";
 import {Gender, getGenderNameLocale} from "../../../models/common/gender.enum";
+import {FileRemoveEvent, FileSelectEvent} from "primeng/fileupload";
 
 @Component({
   selector: 'app-create-user-profile-page',
@@ -56,7 +57,7 @@ export class CreateUserProfilePageComponent {
     if (!user)
       return;
 
-    let createDto: CreateUserProfileDto = {
+    let createDto: CreateUserProfileRequestDto = {
       name: this.createForm.controls.name.value!,
       surname: this.createForm.controls.surname.value!,
       gender: this.createForm.controls.gender.value!,
@@ -69,21 +70,23 @@ export class CreateUserProfilePageComponent {
         tap(apiResult => {
           if (this.avatarFile != null)
           {
-            let postPhotoDto: PostPhotoDto = {
+            let postPhotoDto: PostPhotoRequestDto = {
 
             };
 
             this.userProfileService.postPhoto(this.avatarFile, postPhotoDto)
               .pipe(
                 tap(apiResult => {
-                  let updateAvatarDto: UpdateUserProfileAvatarDto = {
+                  let updateAvatarDto: UpdateUserProfileAvatarRequestDto = {
                     photoId: apiResult.data,
                   };
 
                   this.userProfileService.updateAvatar(updateAvatarDto)
                     .pipe(
                       tap((apiResult) => {
+                        this.toastr.success("You've successfully created your profile! Here it is");
 
+                        this.router.navigate(['/profile', user.username], { onSameUrlNavigation: "reload", });
                       }),
                       catchError(err => {
                         this.toastr.warning("Something went wrong while applying your avatar!");
@@ -114,11 +117,11 @@ export class CreateUserProfilePageComponent {
     //console.log(JSON.stringify(createDto));
   }
 
-  chooseFile = (files: FileList | null) => {
-    if (!files || files.length === 0)
+  onSelectAvatarFile(event: FileSelectEvent) {
+    if (event.files.length === 0)
       return;
 
-    const file = files[0];
+    const file = event.files[0];
 
     var reader = new FileReader();
 
@@ -134,7 +137,16 @@ export class CreateUserProfilePageComponent {
     reader.readAsDataURL(file);
   }
 
+  onRemoveAvatarFile(event: FileRemoveEvent) {
+    if (!this.avatarFile)
+      return;
+
+    this.avatarFile = null;
+    this.avatarFileUrl = null;
+  }
+
   protected readonly getCountryNameLocale = getCountryNameLocale;
   protected readonly getCountryFlagEmoji = getCountryFlagEmoji;
   protected readonly getGenderNameLocale = getGenderNameLocale;
+  protected readonly Gender = Gender;
 }

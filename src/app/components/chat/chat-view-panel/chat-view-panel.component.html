@@ -1,0 +1,106 @@
+<div class="chat-view-panel">
+    <p-confirmDialog #cd [style]="" [dismissableMask]="true">
+        <ng-template pTemplate="header">
+            <p>{{ 'Confirmation' }}</p>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <button type="button" pButton icon="pi pi-times" label="No" (click)="cd.reject()"></button>
+            <button type="button" pButton icon="pi pi-check" label="Yes" (click)="cd.accept()"></button>
+        </ng-template>
+    </p-confirmDialog>
+
+    <div class="header-wrapper">
+        <ng-container *ngIf="isSelectionModeOn; then selectionModeHeader else defaultHeader"></ng-container>
+
+        <ng-template #defaultHeader>
+            <div class="header">
+                <div class="header-info">
+                    <p>{{ chat.displayName }}</p>
+                    <p class="text-[var(--text-color-secondary)]">{{ "was a long time ago" }}</p>
+                </div>
+
+                <div class="header-buttons">
+                    <p-button icon="pi pi-search" styleClass="p-button-text p-button-rounded"></p-button>
+                    <p-button icon="pi pi-ellipsis-v" styleClass="p-button-text p-button-rounded" (click)="onHeaderMenuBtnClick($event)"></p-button>
+                </div>
+
+                <p-menu #headerMenu [popup]="true"></p-menu>
+            </div>
+        </ng-template>
+
+        <ng-template #selectionModeHeader>
+            <div class="selection-mode-header">
+                <div class="header-buttons">
+                    <p-button styleClass="p-button-sm" label="{{ 'Forward' | uppercase }}" badge="{{ selectedMessages.size }}"></p-button>
+                    <p-button styleClass="p-button-sm" label="{{ 'Delete' | uppercase }}" badge="{{ selectedMessages.size }}" (click)="selectionModeDeleteSelected()"></p-button>
+                </div>
+
+                <p-button label="{{ 'Cancel' | uppercase }}" styleClass="p-button-text p-button-sm" (click)="selectionModeCancel()"></p-button>
+            </div>
+        </ng-template>
+    </div>
+
+    <div class="messages" #messages>
+        <cdk-virtual-scroll-viewport [appendOnly]="true" appChatMessagesVirtualScroll [messages]="chat.messages" #messagesScrollViewport class="h-full w-full mr-5" (scrolledIndexChange)="scrolledIndexChange($event)">
+            <app-chat-message
+                    *cdkVirtualFor="let message of chat.messages;"
+                    [message]="message"
+                    [attr.data-message-id]="message.id"
+
+                    [isSelectionModeOn]="isSelectionModeOn"
+                    [messageSelected$]="messageSelected$"
+                    [messageUnselected$]="messageUnselected$"
+                    [contextMenu]="chatMessageContextMenu"
+
+                    (onSelect)="addMessageToSelected(message)"
+                    (onUnselect)="removeMessageFromSelected(message)"
+                    (onCopy)="copyMessages([message])"
+                    (onDelete)="showDeleteMessagesConfirmDialog([message])"
+            >
+            </app-chat-message>
+        </cdk-virtual-scroll-viewport>
+
+        <p-contextMenu #chatMessageContextMenu [appendTo]="messages"></p-contextMenu>
+    </div>
+
+    <div class="input-container">
+        <ng-container *ngIf="chat.messageToEdit$.value as message">
+            <div class="edit-wrapper">
+                <div class="edit">
+                    <span class="edit-icon pi pi-pencil"></span>
+
+                    <div class="edit-content">
+                        <p class="edit-title">{{ 'Editing' }}</p>
+                        <p class="edit-subtitle">{{ message.content }}</p>
+                    </div>
+                </div>
+
+                <p-button icon="pi pi-fw pi-times" styleClass="p-button-text p-button-rounded ml-4" (click)="onCancelEditBtnPressed()"></p-button>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="chat.messageToReply$.value as message">
+            <div class="edit-wrapper">
+                <div class="edit">
+                    <span class="edit-icon pi pi-reply" style="transform: scaleX(-1.0)"></span>
+
+                    <div class="edit-content">
+                        <p class="edit-title">{{ 'Reply' }}</p>
+                        <p class="edit-subtitle">{{ message.content }}</p>
+                    </div>
+                </div>
+
+                <p-button icon="pi pi-fw pi-times" styleClass="p-button-text p-button-rounded ml-4" (click)="onCancelEditBtnPressed()"></p-button>
+            </div>
+        </ng-container>
+
+        <div class="input">
+            <p-button icon="pi pi-paperclip" styleClass="p-button-text"></p-button>
+            <textarea #messageInput pAutoFocus rows="1" cols="30" placeholder="{{ 'chat.enterMessage' | translate }}" pInputTextarea style="resize: none;" class="w-full" [ngModel]="messageInputValue" (ngModelChange)="messageInputModel$.next($event)" (keydown)="onMessageInputKeyDown($event)"></textarea>
+            <app-emoji-picker [emojiInput$]="emojiInputValue$"></app-emoji-picker>
+            <p-button icon="pi" styleClass="p-button-text" (click)="sendMessageBtnClick()">
+                <span class="pi pi-send" [class.pi-check]="chat.messageToEdit$.value"></span>
+            </p-button>
+        </div>
+    </div>
+</div>

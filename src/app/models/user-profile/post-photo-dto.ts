@@ -1,3 +1,3 @@
-export interface PostPhotoDto {
+export interface PostPhotoRequestDto {
 
 }

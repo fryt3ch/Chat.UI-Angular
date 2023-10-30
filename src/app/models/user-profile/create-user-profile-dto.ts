@@ -1,7 +1,7 @@
 import {Country} from "../common/country.enum";
 import {Gender} from "../common/gender.enum";
 
-export interface CreateUserProfileDto {
+export interface CreateUserProfileRequestDto {
   name: string;
   surname: string;
   gender: Gender;

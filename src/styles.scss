@@ -1,5 +1,22 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'assets/styles/tailwind-preflight.css';
+//@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @import 'ngx-toastr/toastr';
+
+@import "primeicons/primeicons.css";
+
+//@import "primeng/resources/themes/soho-dark/theme.css";
+//@import "assets/themes/dark/theme.css";
+@import "primeng/resources/primeng.min.css";
+
+@import '@ctrl/ngx-emoji-mart/picker';
+
+.hide-trigger .p-dropdown-trigger {
+  display: none;
+}
+
+.cdk-virtual-scroll-content-wrapper {
+  width: 100%;
+}

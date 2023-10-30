@@ -1,4 +1,4 @@
-export interface GetPhotoDto {
+export interface GetPhotoRequestDto {
   userId: string,
   photoId: string,
 }

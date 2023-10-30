@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {AuthService} from "../../../services/auth/auth.service";
-import {SignInDto} from "../../../models/auth/sign-in-dto";
+import {SignInRequestDto} from "../../../models/auth/sign-in-request-dto";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {ToastrService} from "ngx-toastr";
@@ -31,7 +31,7 @@ export class SignInPageComponent {
   signInBtnDisabled: boolean = false;
 
   signIn() {
-    let signInDto: SignInDto = {
+    let signInDto: SignInRequestDto = {
       username: <string>this.signInForm.controls.username.value,
       password: <string>this.signInForm.controls.password.value,
       rememberMe: <boolean>this.signInForm.controls.rememberMe.value,
@@ -39,18 +39,19 @@ export class SignInPageComponent {
 
     this.signInBtnDisabled = true;
 
-    this.authService.signIn(signInDto)
-      .pipe(
-        tap((apiResult) => {
-          console.log("asd")
-        }),
-        catchError((err) => {
-          return of();
-        }),
-        finalize(() => {
-          this.signInBtnDisabled = false;
-        })
-      )
-      .subscribe();
+    setTimeout(() => {
+      this.authService.signIn(signInDto)
+        .pipe(
+          catchError((err) => {
+            return of();
+          }),
+          finalize(() => {
+            this.signInBtnDisabled = false;
+          })
+        )
+        .subscribe(next => {
+
+        });
+    }, 1_000);
   }
 }

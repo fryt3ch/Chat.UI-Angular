@@ -5,7 +5,7 @@ import {inject} from "@angular/core";
 export const signedInGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
 
-  if (!authService.isSignedIn())
+  if (!authService.isSignedIn)
   {
     const router = inject(Router);
 
@@ -18,7 +18,7 @@ export const signedInGuard: CanActivateFn = (route, state) => {
 export const notSignedInGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
 
-  if (authService.isSignedIn())
+  if (authService.isSignedIn)
   {
     const router = inject(Router);
 

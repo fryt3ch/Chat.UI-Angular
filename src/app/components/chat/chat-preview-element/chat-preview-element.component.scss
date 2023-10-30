@@ -1,0 +1,11 @@
+.chat-preview-element {
+  @apply w-full h-full flex flex-row p-3 select-none;
+
+  &:hover {
+    background-color: var(--surface-c);
+  }
+
+ &.is-selected {
+   background-color: var(--primary-700);
+ }
+}

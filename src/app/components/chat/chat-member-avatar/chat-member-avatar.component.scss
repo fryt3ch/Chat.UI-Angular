@@ -1,0 +1,19 @@
+.chat-member-avatar {
+  position: relative;
+
+  &.is-online::after {
+    content: ' ';
+    $radius: 20%;
+
+    width: $radius;
+    height: $radius;
+
+    border: 2px solid var(--surface-e);
+
+    background: var(--primary-color);
+    position: absolute;
+    bottom: 5%;
+    right: 5%;
+    border-radius: 100%;
+  }
+}

@@ -1,0 +1,11 @@
+<div class="chat-message" [ngClass]="message.isSenderMe ? 'is-out' : 'is-in'" [class.is-selected]="isSelected" (contextmenu)="onMessageContextMenu($event, false)" (click)="onMessageClick($event, false)">
+    <div class="bubble" (contextmenu)="onMessageContextMenu($event, true)">
+        <div class="bubble-content">
+            {{ message.content }}
+        </div>
+
+        <div class="bubble-status" [title]="message.sentAt | date:'full'">
+            <p class="time">{{ message.sentAt | date:'hh:mm' }}</p>
+        </div>
+    </div>
+</div>

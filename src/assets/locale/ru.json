@@ -2,9 +2,28 @@
 	"common": {
 		"username": "Имя пользователя",
 		"password": "Пароль",
+		"name": "Имя",
+		"surname": "Фамилия",
+		"email": "E-mail",
+		"birthDate": "Дата рождения",
+		"country": "Страна",
+		"gender": "Пол",
+		"loading": "Идет загрузка",
 
 		"validation": {
-			"required": "Это поле не должно быть пустым!"
+			"required": "Это поле не должно быть пустым",
+			"email": "Неверный e-mail",
+			"minLength": "Минимальная длина этой строки - {0}",
+			"maxLength": "Максимальная длина этой строки - {0}",
+			"rangeLength": "Length of this string should be between {0} and {1}"
+		}
+	},
+	"pageNotFound": {
+		"message": "К сожалению, мы не смогли найти эту страницу.",
+		"hint": "Но не волнуйтесь, вы сможете найти много интересного на главной странице.",
+		"returnBtnText": {
+			"back": "Назад",
+			"backToHomePage": "Вернуться на главную"
 		}
 	},
 	"signIn": {
@@ -14,5 +33,22 @@
 		"signIn": "Войти",
 		"notSignedUp_0": "У вас нет аккаунта?",
 		"notSignedUp_1": "Создайте его прямо сейчас!"
+	},
+	"signUp": {
+		"signUp": "Зарегистрироваться",
+
+		"success": "Вы успешно зарегистрировались!",
+
+		"validation" : {
+			"confirmPasswordNotMatch": "Пароли не совпадают"
+		}
+	},
+	"profile": {
+		"create": {
+			"create": "Создать"
+		},
+		"notFound": {
+			"message": "Запрашиваемый пользователь не существует либо еще не заполнил свой профиль!"
+		}
 	}
 }

@@ -4,7 +4,7 @@ import {UserProfileService} from "../../../services/user-profile/user-profile.se
 import {UserProfileDto} from "../../../models/user-profile/user-profile-dto";
 import {catchError, finalize, of, tap} from "rxjs";
 import {AuthService} from "../../../services/auth/auth.service";
-import {GetPhotoDto} from "../../../models/user-profile/get-photo-dto";
+import {GetPhotoRequestDto} from "../../../models/user-profile/get-photo-dto";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {environment} from "../../../../environments/environment";
 import {Gender} from "../../../models/common/gender.enum";
@@ -36,31 +36,28 @@ export class UserProfilePageComponent {
     if (this.authService.user && this.authService.user.username === username)
       this.isMyProfile = true;
 
-    this.userProfileService.get(username)
+    this.userProfileService.get(username, { full: true, })
       .pipe(
         tap(value => {
           this.userProfile = value;
 
           if (this.userProfile.avatarPhotoId) {
-            let getPhotoDto: GetPhotoDto = {
+            let getPhotoDto: GetPhotoRequestDto = {
               userId: this.userProfile.id,
               photoId: this.userProfile.avatarPhotoId,
             };
 
             this.userProfileService.getPhoto(getPhotoDto)
               .pipe(
-                tap(value => {
-                  let objectUrl = 'data:image/png;base64,' + value.imageBytes;
-
-                  this.avatarPhotoUrl = this.domSanitizer.bypassSecurityTrustUrl(objectUrl);
-                }),
                 catchError(err => {
                   this.avatarPhotoUrl = this.getDefaultAvatarUrl(this.userProfile!.gender);
 
                   return of();
                 }),
               )
-              .subscribe();
+              .subscribe(next => {
+                  this.avatarPhotoUrl = next;
+              });
           }
           else {
             this.avatarPhotoUrl = this.getDefaultAvatarUrl(this.userProfile.gender);
@@ -74,7 +71,9 @@ export class UserProfilePageComponent {
           return of(err);
         }),
         finalize(() => {
-          this.isLoaded = true;
+          setTimeout(() => {
+            this.isLoaded = true;
+          }, 1000);
         })
       )
       .subscribe();

@@ -1,5 +1,6 @@
 ﻿import {Country} from "../common/country.enum";
 import {Gender} from "../common/gender.enum";
+import {UserProfileColor} from "../common/user-profile-color.enum";
 
 export interface UserProfileDto {
   id: string;
@@ -9,5 +10,14 @@ export interface UserProfileDto {
   gender: Gender;
   country: Country;
   birthDate: Date;
-  avatarPhotoId: string | null;
+  avatarPhotoId: string | undefined;
+  color: UserProfileColor;
+}
+
+export interface UserProfileFullDto extends UserProfileDto {
+
+}
+
+export interface UserProfileRequestDto {
+  full: boolean;
 }

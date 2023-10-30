@@ -1,37 +1,40 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from "@angular/common/http";
-import {User} from "../../models/auth/user";
-import {catchError, map, Observable, of} from "rxjs";
-import {UserProfileDto} from "../../models/user-profile/user-profile-dto";
-import {CreateUserProfileDto} from "../../models/user-profile/create-user-profile-dto";
+import {UserDto} from "../../models/auth/user-dto";
+import {BehaviorSubject, catchError, map, Observable, of, ReplaySubject} from "rxjs";
+import {UserProfileDto, UserProfileFullDto, UserProfileRequestDto} from "../../models/user-profile/user-profile-dto";
+import {CreateUserProfileRequestDto} from "../../models/user-profile/create-user-profile-dto";
 import {ApiResult, ApiResultWithData} from "../../models/common/api-result";
-import {UpdateUserProfileAvatarDto} from "../../models/user-profile/update-user-profile-avatar-dto";
-import {PostPhotoDto} from "../../models/user-profile/post-photo-dto";
-import {GetPhotoDto} from "../../models/user-profile/get-photo-dto";
-import {GetPhotoResultDto} from "../../models/user-profile/get-photo-result-dto";
+import {UpdateUserProfileAvatarRequestDto} from "../../models/user-profile/update-user-profile-avatar-dto";
+import {PostPhotoRequestDto} from "../../models/user-profile/post-photo-dto";
+import {GetPhotoRequestDto} from "../../models/user-profile/get-photo-dto";
+import {UserProfile} from "../../models/user-profile/user-profile";
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserProfileService {
+  public readonly userProfile$: ReplaySubject<UserProfile> = new ReplaySubject<UserProfile>(1);
 
   constructor(private httpClient: HttpClient) {
 
   }
 
-  get(username: string) : Observable<UserProfileDto> {
-    return this.httpClient.get<UserProfileDto>(`api/user/${username}/profile`, {
+  get(idOrUsername: string, dto: UserProfileRequestDto) : Observable<UserProfileDto> {
+    return this.httpClient.get<ApiResultWithData<UserProfileDto>>(`api/user/${idOrUsername}/profile`, {
+      withCredentials: true,
+    }).pipe(
+        map(x => x.data),
+    );
+  }
+
+  create(user: UserDto, createUserProfileDto: CreateUserProfileRequestDto) {
+    return this.httpClient.post<ApiResult>(`api/user/profile`, createUserProfileDto, {
       withCredentials: true,
     });
   }
 
-  create(user: User, createUserProfileDto: CreateUserProfileDto) {
-    return this.httpClient.post<ApiResult>(`api/user/${user.id}/profile`, createUserProfileDto, {
-      withCredentials: true,
-    });
-  }
-
-  postPhoto(photoFile: File, postPhotoDto: PostPhotoDto) {
+  postPhoto(photoFile: File, postPhotoDto: PostPhotoRequestDto) {
     const formData = new FormData();
 
     formData.append("file", photoFile, photoFile.name);
@@ -42,20 +45,20 @@ export class UserProfileService {
     })
   }
 
-  updateAvatar(updateAvatarDto: UpdateUserProfileAvatarDto) {
+  updateAvatar(updateAvatarDto: UpdateUserProfileAvatarRequestDto) {
     return this.httpClient.put<ApiResult>(`/api/user/profile/photo/avatar`, updateAvatarDto, {
       withCredentials: true,
     })
   }
 
-  getPhoto(getPhotoDto: GetPhotoDto) {
-    return this.httpClient.get<ApiResultWithData<GetPhotoResultDto>>(`/api/user/${getPhotoDto.userId}/profile/photo/${getPhotoDto.photoId}`, {
+  getPhoto(getPhotoDto: GetPhotoRequestDto) {
+    return this.httpClient.get(`/api/user/${getPhotoDto.userId}/profile/photo/${getPhotoDto.photoId}`, {
       withCredentials: true,
-    })
-      .pipe(
-        map(value => {
-          return value.data;
-        }),
-      )
+      responseType: "blob",
+    }).pipe(
+        map(x => {
+          return URL.createObjectURL(x)
+        })
+    );
   }
 }

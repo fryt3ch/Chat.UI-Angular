@@ -4,6 +4,7 @@
     <p>Name: {{user.name}} {{ user.surname }}</p>
     <p>Birthdate: {{ user.birthDate | date }}</p>
 
+    <p-avatar icon="pi pi-user" shape="circle" size="large"></p-avatar>
     <img *ngIf="avatarPhotoUrl as photoUrl" [src]="photoUrl" width="200" height="200"/>
      component
   </ng-container>
@@ -15,7 +16,7 @@
 
 <ng-template #userLoadingTemplate>
   <ng-container>
-    <p class="text-center text-lg">Loading</p>
+    <app-progress-spinner></app-progress-spinner>
   </ng-container>
 </ng-template>
 

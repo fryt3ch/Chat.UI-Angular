@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import {AuthService} from "../../../services/auth/auth.service";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {SignUpDto} from "../../../models/auth/sign-up-dto";
+import {SignUpRequestDto} from "../../../models/auth/sign-up-request-dto";
 import {Router} from "@angular/router";
 import {equalsToControlValidator} from "../../../validators/equals-to-control.validator";
 import 'node_modules/string-format-ts';
 import {catchError, finalize, of, tap} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
 import {ToastrService} from "ngx-toastr";
-import {SignInDto} from "../../../models/auth/sign-in-dto";
+import {SignInRequestDto} from "../../../models/auth/sign-in-request-dto";
 import {ApiError} from "../../../models/common/api-result";
 
 @Component({
@@ -46,7 +46,7 @@ export class SignUpPageComponent {
   ]);
 
   signUp() {
-    let signUpDto: SignUpDto = {
+    let signUpDto: SignUpRequestDto = {
       username: <string>this.signUpForm.controls.username.value,
       email: <string>this.signUpForm.controls.email.value,
       password: <string>this.signUpForm.controls.password.value,
@@ -60,7 +60,7 @@ export class SignUpPageComponent {
               this.toastr.success(x);
             });
 
-          let signInDto: SignInDto = {
+          let signInDto: SignInRequestDto = {
             username: signUpDto.username,
             password: signUpDto.password,
 

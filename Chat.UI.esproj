@@ -12,12 +12,13 @@
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="src\app\components\" />
+    <Folder Include="src\app\components\chat\" />
     <Folder Include="src\app\interceptors\guards\" />
     <Folder Include="src\app\pages\errors\" />
     <Folder Include="src\app\pages\user-profile\" />
     <Folder Include="src\app\pipes\" />
-    <Folder Include="src\app\services\" />
     <Folder Include="src\app\services\auth\" />
+    <Folder Include="src\app\services\chat\" />
+    <Folder Include="src\app\services\general\" />
   </ItemGroup>
 </Project>

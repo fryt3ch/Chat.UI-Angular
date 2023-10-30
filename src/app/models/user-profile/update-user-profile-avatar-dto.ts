@@ -1,3 +1,3 @@
-export interface UpdateUserProfileAvatarDto {
+export interface UpdateUserProfileAvatarRequestDto {
   photoId: string;
 }

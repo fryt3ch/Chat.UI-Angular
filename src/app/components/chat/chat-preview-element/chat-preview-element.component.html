@@ -1,0 +1,7 @@
+<div class="chat-preview-element" [class.is-selected]="isChatSelected()">
+  <app-chat-member-avatar [avatarUrl$]="chat.avatarPhotoUrl$" [displayName]="chat.displayName" [isOnline]="chat.isOnline" [color]="getUserProfileColorProperties(chat.color).hex" size="xlarge"></app-chat-member-avatar>
+  <div class="flex flex-col ml-3.5 justify-between w-full overflow-hidden">
+    <p>{{ chat.displayName }}</p>
+    <p *ngIf="chat.lastMessage as lastMessage" class="whitespace-nowrap overflow-hidden overflow-ellipsis">{{ lastMessage.content }}</p>
+  </div>
+</div>
