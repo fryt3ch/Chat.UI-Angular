@@ -8,8 +8,8 @@
   </div>
   <div class="previews">
     <cdk-virtual-scroll-viewport #chatsScrollViewport class="h-full w-full" [itemSize]="90">
-      <ng-container *ngIf="chatService.chatsPreviewsLoaded; else chatPreviewSkeletons;">
-        <app-chat-preview-element *cdkVirtualFor="let item of chatService.chats" [chat]="item" (click)="onChatClick(item)" (contextmenu)="onContextMenu($event, item)"></app-chat-preview-element>
+      <ng-container *ngIf="chatService.chatsPreviewsLoaded$ | async; else chatPreviewSkeletons;">
+        <app-chat-preview-element *cdkVirtualFor="let item of chatService.chats$ | async" [chat]="item" (click)="onChatClick(item)" (contextmenu)="onContextMenu($event, item)"></app-chat-preview-element>
 
         <p-contextMenu #chatPreviewContextMenu [model]="t" appendTo="body"></p-contextMenu>
       </ng-container>

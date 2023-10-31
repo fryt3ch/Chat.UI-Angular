@@ -7,7 +7,7 @@
         </ng-template>
         <ng-template pTemplate>
             <div class="w-full">
-                <app-chat-view-panel *ngIf="chatService.selectedChat$ | async as selectedChat" [chat]="selectedChat"></app-chat-view-panel>
+                <app-chat-view-panel *ngIf="chatService.activeChat$ | async as selectedChat" [chat]="selectedChat"></app-chat-view-panel>
             </div>
         </ng-template>
     </p-splitter>

@@ -10,17 +10,21 @@ import {getUserProfileColorProperties} from "../../../models/common/user-profile
   styleUrls: ['./chat-preview-element.component.scss']
 })
 export class ChatPreviewElementComponent {
-  @Input({ required: true, })
-  public chat!: Chat;
+  @Input({ required: true, }) public chat!: Chat;
+
+  protected isActive: boolean = false;
 
   constructor(private chatService: ChatService) {
-
+    this.chatService.activeChat$
+        .subscribe(x => {
+          if (x) {
+            this.isActive = true;
+          } else {
+            if (this.isActive)
+              this.isActive = false;
+          }
+        })
   }
 
-  protected isChatSelected() {
-    return this.chatService.selectedChat == this.chat;
-  }
-
-    protected readonly UserChat = UserChat;
-    protected readonly getUserProfileColorProperties = getUserProfileColorProperties;
+  protected readonly getUserProfileColorProperties = getUserProfileColorProperties;
 }

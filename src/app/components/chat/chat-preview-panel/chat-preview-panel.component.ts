@@ -13,7 +13,7 @@ import {ContextMenu} from "primeng/contextmenu";
 export class ChatPreviewPanelComponent implements OnInit {
   @ViewChild('chatsScrollViewport') chatsScrollViewport!: CdkVirtualScrollViewport;
   @ViewChild('chatPreviewContextMenu') chatPreviewContextMenu!: ContextMenu;
-
+  
   constructor(protected chatService: ChatService) {
   }
 
@@ -22,10 +22,7 @@ export class ChatPreviewPanelComponent implements OnInit {
   }
 
   protected onChatClick(chat: Chat) {
-    if (this.chatService.selectedChat == chat)
-      return;
-
-    this.chatService.setSelectedChat(chat);
+    this.chatService.setActiveChat(chat);
   }
 
   protected onContextMenu(event: MouseEvent, chat: Chat) {

@@ -65,6 +65,8 @@ import {RxLet} from "@rx-angular/template/let";
 import {RxIf} from "@rx-angular/template/if";
 import {BadgeModule} from "primeng/badge";
 import {ConfirmDialogModule} from "primeng/confirmdialog";
+import { ChatMessageListComponent } from './components/chat/chat-message-list/chat-message-list.component';
+import {RxFor} from "@rx-angular/template/for";
 
 export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
   return new TranslateHttpLoader(http, './assets/locale/', '.json');
@@ -89,6 +91,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     ChatMessageComponent,
     ChatMemberAvatarComponent,
     EmojiPickerComponent,
+    ChatMessageListComponent,
   ],
     imports: [
         TranslateModule.forRoot({
@@ -141,7 +144,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
         RxLet,
         RxIf,
         BadgeModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        RxFor,
     ],
   providers: [
     {

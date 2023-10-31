@@ -15,10 +15,10 @@ import {DomHandler} from "primeng/dom";
 })
 export class ChatMessageComponent implements OnInit, OnDestroy {
   @Input({ required: true, }) public message!: ChatMessage;
-  @Input({ required: true, }) public contextMenu: ContextMenu | undefined;
-  @Input({ required: true, }) public messageSelected$!: Observable<ChatMessage>;
-  @Input({ required: true, }) public messageUnselected$!: Observable<ChatMessage>;
-  @Input({ required: true, }) public isSelectionModeOn!: boolean;
+  @Input({ required: false, }) public contextMenu: ContextMenu | undefined;
+  @Input({ required: false, }) public messageSelected$!: Observable<ChatMessage>;
+  @Input({ required: false, }) public messageUnselected$!: Observable<ChatMessage>;
+  @Input({ required: false, }) public isSelectionModeOn!: boolean;
 
   @Output() onSelect = new EventEmitter<void>();
   @Output() onUnselect = new EventEmitter<void>();
@@ -35,6 +35,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    return;
+
     this.messageSelected$.pipe(takeUntil(this._destroy$)).subscribe(x => {
       if (x != this.message)
         return;

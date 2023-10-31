@@ -40,8 +40,8 @@
         </ng-template>
     </div>
 
-    <div class="messages" #messages>
-        <cdk-virtual-scroll-viewport [appendOnly]="true" appChatMessagesVirtualScroll [messages]="chat.messages" #messagesScrollViewport class="h-full w-full mr-5" (scrolledIndexChange)="scrolledIndexChange($event)">
+    <app-chat-message-list class="messages" #messages>
+<!--        <cdk-virtual-scroll-viewport  [appendOnly]="true" appChatMessagesVirtualScroll [messages]="chat.messages" #messagesScrollViewport class="h-full w-full mr-5" (scrolledIndexChange)="scrolledIndexChange($event)">
             <app-chat-message
                     *cdkVirtualFor="let message of chat.messages;"
                     [message]="message"
@@ -58,10 +58,10 @@
                     (onDelete)="showDeleteMessagesConfirmDialog([message])"
             >
             </app-chat-message>
-        </cdk-virtual-scroll-viewport>
+        </cdk-virtual-scroll-viewport>-->
 
         <p-contextMenu #chatMessageContextMenu [appendTo]="messages"></p-contextMenu>
-    </div>
+    </app-chat-message-list>
 
     <div class="input-container">
         <ng-container *ngIf="chat.messageToEdit$.value as message">

@@ -41,7 +41,7 @@ import {ConfirmationService, ConfirmEventType} from "primeng/api";
 export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild('messageInput') messageInput!: InputTextarea;
   @ViewChild('emojiPicker') emojiPicker!: EmojiComponent;
-  @ViewChild('messagesScrollViewport') messagesScrollViewport!: CdkVirtualScrollViewport;
+/*  @ViewChild('messagesScrollViewport') messagesScrollViewport!: InfiniteScrollDirective;*/
   @ViewChild('chatMessageContextMenu') chatMessageContextMenu!: ContextMenu;
   @ViewChild('headerMenu') headerMenu!: Menu;
 
@@ -76,11 +76,11 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
       if (x.chat != this.chat)
         return;
 
-      if (this.messagesScrollViewport.measureScrollOffset("bottom") == 0) {
+/*      if (this.messagesScrollViewport.measureScrollOffset("bottom") == 0) {
         setTimeout(() => {
           this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "smooth");
         }, 0)
-      }
+      }*/
     });
 
     this.chatService.deletedMessage$.pipe(
@@ -169,22 +169,23 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
           this.chat.addMessages(next.reverse(), true);
         }
 
-        setTimeout(() => {
+/*        setTimeout(() => {
           if (this.chat.lastMessageIdx >= 0)
+            this.messagesScrollViewport.
             this.messagesScrollViewport.scrollToIndex(this.chat.lastMessageIdx, "instant");
           else
             this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "instant");
-        }, 0);
+        }, 0);*/
 
         this.messagesPreloaded = true;
       });
     } else {
-      setTimeout(() => {
+/*      setTimeout(() => {
         if (this.chat.lastMessageIdx >= 0)
           this.messagesScrollViewport.scrollToIndex(this.chat.lastMessageIdx, "instant");
         else
           this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "instant");
-      }, 0);
+      }, 0);*/
     }
   }
 
@@ -238,9 +239,9 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           this.chat.addMessages(next.reverse(), true);
 
-          setTimeout(() => {
+/*          setTimeout(() => {
             this.messagesScrollViewport.scrollToIndex(next.length, "instant");
-          }, 0);
+          }, 0);*/
         }
       });
     }
@@ -265,7 +266,7 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
     if (idx < 0)
       return;
 
-    this.messagesScrollViewport.scrollToIndex(idx, "instant");
+/*    this.messagesScrollViewport.scrollToIndex(idx, "instant");*/
   }
 
   protected onHeaderMenuBtnClick(event: MouseEvent) {

@@ -40,7 +40,8 @@ export class ChatService {
   private readonly _deletedMessage$: Subject<ChatMessage> = new Subject();
   private readonly _editedMessage$: Subject<ChatMessage> = new Subject();
 
-  private readonly _selectedChat$: BehaviorSubject<Chat | undefined> = new BehaviorSubject<Chat | undefined>(undefined);
+  private readonly _activeChat$: BehaviorSubject<Chat | undefined> = new BehaviorSubject<Chat | undefined>(undefined);
+  private readonly _activeChatMessages$: BehaviorSubject<ChatMessage[]> = new BehaviorSubject<ChatMessage[]>([]);
 
   public readonly selectedChatIsTyping$: BehaviorSubject<boolean> = <BehaviorSubject<boolean>>(new BehaviorSubject<boolean>(false)).pipe(
       distinctUntilChanged(),
@@ -49,11 +50,9 @@ export class ChatService {
   public readonly chats$: Observable<Chat[]> = this._chats$.asObservable();
   public readonly newMessage$: Observable<ChatMessage> = this._newMessage$.asObservable();
   public readonly deletedMessage$: Observable<ChatMessage> = this._deletedMessage$.asObservable();
-  public readonly selectedChat$: Observable<Chat | undefined> = this._selectedChat$.asObservable();
-
-  public get chatsPreviewsLoaded() { return this._chatsPreviewsLoaded$.value }
-  public get chats() { return this._chats$.value; }
-  public get selectedChat(): Chat | undefined { return this._selectedChat$.value; };
+  public readonly activeChat$: Observable<Chat | undefined> = this._activeChat$.asObservable();
+  public readonly activeChatMessages$: Observable<ChatMessage[]> = this._activeChatMessages$.asObservable();
+  public readonly chatsPreviewsLoaded$: Observable<boolean> = this._chatsPreviewsLoaded$.asObservable();
 
   constructor(private httpClient: HttpClient, public userProfileService: UserProfileService) {
     this.connection = new signalR.HubConnectionBuilder()
@@ -134,7 +133,7 @@ export class ChatService {
     });
 
     this.selectedChatIsTyping$.subscribe(x => {
-      if (!this.selectedChat)
+      if (!this._activeChat$.value)
         return;
 
       const dto: SetUserTypingStateRequestDto = {
@@ -143,7 +142,7 @@ export class ChatService {
 
       //console.log(x);
 
-      this.setChatUserTypingState(this.selectedChat.id, dto)
+      this.setChatUserTypingState(this._activeChat$.value.id, dto)
           .subscribe();
     })
   }
@@ -164,6 +163,9 @@ export class ChatService {
     return this.httpClient.get<ApiResultWithData<ChatMessageDto[]>>(`/api/chat/${chat.id}/messages`, { withCredentials: true, params: new HttpParams({ fromObject: dto as any, }) })
       .pipe(
         map(value => value.data.map(x => ChatMessage.fromDto(x, chat, this))),
+        tap(messages => {
+          this._activeChatMessages$.next([...messages, ...this._activeChatMessages$.value])
+        }),
       );
   }
 
@@ -203,7 +205,7 @@ export class ChatService {
                           .pipe(shareReplay(1));
                   }
 
-                  this._chats$.next([...this.chats, chat]);
+                  this._chats$.next([...this._chats$.value, chat]);
                 }
 
                 setTimeout(() => {
@@ -224,13 +226,15 @@ export class ChatService {
   }
 
   public getChatById(id: string) {
-    return this.chats.find(x => x.id == id);
+    return this._chats$.value.find(x => x.id == id);
   }
 
-  public setSelectedChat(chat: Chat) {
-    if (this.selectedChat == chat)
+  public setActiveChat(chat: Chat) {
+    if (this._activeChat$.value == chat)
       return;
 
-    this._selectedChat$.next(chat);
+    this._activeChat$.next(chat);
+
+    this._activeChatMessages$.next([...chat.messages]);
   }
 }
