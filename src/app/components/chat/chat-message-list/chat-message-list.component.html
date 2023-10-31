@@ -1,0 +1,11 @@
+<div #scrollContainer class="scroll-container">
+    <div class="scroll-viewport">
+        <ng-container *rxFor="let message of messages$;">
+            <app-chat-message
+                    [message]="message"
+                    [attr.data-message-id]="message.id"
+            >
+            </app-chat-message>
+        </ng-container>
+    </div>
+</div>
