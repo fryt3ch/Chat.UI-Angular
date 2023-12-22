@@ -1,0 +1,72 @@
+<div class="wrapper">
+  <div class="header">
+    <h1>User info</h1>
+    <button  pButton icon="pi pi-times" class="p-button-rounded p-button-text" (click)="onCloseBtnClick()"></button>
+  </div>
+  <div class="content">
+    <ng-container *ngIf="photos.length > 0; else noPhotosTemplate;">
+      <div class="photos">
+        <p-galleria
+          [value]="photos"
+          [numVisible]="5"
+          [circular]="true"
+          [showItemNavigators]="isMultiplePhotosViewOn"
+          [showItemNavigatorsOnHover]="true"
+          [showThumbnails]="false"
+          [responsiveOptions]="undefined"
+          [containerStyle]="{ 'max-width': '320px' }"
+          containerClass="custom-galleria"
+        >
+          <ng-template pTemplate="item" let-item>
+            <div>
+              <img [src]="item.src$ | async" style="width: 100%; display: block; -webkit-user-drag: none;" />
+            </div>
+          </ng-template>
+          <ng-template pTemplate="caption" let-item>
+            <h4 style="margin-bottom: .5rem;">{{ member.displayName }}</h4>
+            <p class="opacity-70">{{ 'was a long time ago' }}</p>
+          </ng-template>
+        </p-galleria>
+      </div>
+    </ng-container>
+
+    <div class="info-section">
+      <div pRipple class="row" (click)="onInfoSectionUsernameClick($event, member.username)">
+        <span class="pi pi-at"></span>
+        <div class="content">
+          <div class="text-group">
+            <p class="title">{{ member.username }}</p>
+            <p class="subtitle">Username</p>
+          </div>
+
+          <button pButton class="pi pi-qrcode p-button-text p-button-rounded" (click)="onInfoSectionQrCodeClick($event)" onmousedown="event.stopPropagation()"></button>
+        </div>
+      </div>
+
+      <div pRipple class="row">
+        <span class="pi pi-bell"></span>
+        <div class="content">
+          <div class="text-group">
+            <p class="title">{{ 'Notifications' }}</p>
+          </div>
+          <p-inputSwitch [disabled]="true"></p-inputSwitch>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noPhotosTemplate>
+  <div class="no-photos">
+    <div class="content">
+      <div class="avatar-wrapper">
+        <app-chat-member-avatar [size]="'xlarge'" [displayName]="member.displayName" [color]="'#ff0000'"></app-chat-member-avatar>
+      </div>
+
+      <div class="info-wrapper">
+        <p class="title">{{ member.displayName }}</p>
+        <p class="subtitle">{{ 'last seen a long time ago' }}</p>
+      </div>
+    </div>
+  </div>
+</ng-template>

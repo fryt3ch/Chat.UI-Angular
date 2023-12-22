@@ -1,0 +1,5 @@
+﻿@mixin ng-deep {
+  :host ::ng-deep {
+    @content;
+  }
+}

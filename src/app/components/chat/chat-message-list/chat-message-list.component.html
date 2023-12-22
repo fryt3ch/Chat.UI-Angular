@@ -1,11 +1,79 @@
-<div #scrollContainer class="scroll-container">
-    <div class="scroll-viewport">
-        <ng-container *rxFor="let message of messages$;">
-            <app-chat-message
-                    [message]="message"
-                    [attr.data-message-id]="message.id"
+<div #container class="chat-message-list-container">
+  <div class="loading-spinner-wrapper" *ngIf="isLoadingMessages">
+    <p-progressSpinner class="loading-spinner" strokeWidth="4" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+  </div>
+
+  <div #scrollViewport class="chat-message-list-scroll" [class.is-scrolling]="isScrolling">
+    <ng-container *ngIf="(groupedMessages$ | push).length > 0; else noMessagesTemplate;">
+      <div class="chat-message-list-inner">
+        <ng-container *rxLet="highlightedMessageId$; let highlightedMessageId;">
+        <ng-container *rxFor="let dateGroup of groupedMessages$; trackBy: trackMessageDateGroupByTime; let isLastDateGroup = last; let select = select;">
+          <div class="date-group" [class.is-last]="isLastDateGroup">
+            <div class="date-separator"
+                 #dateSeparator
+                 stickyStuckObserver
+                 [scrollContainer]="scrollViewport"
+                 (stuckCallback)="stickyDateStuckCallback.next({ date: dateGroup.date, element: dateSeparator, isStuck: $event, })"
             >
-            </app-chat-message>
+              <div class="bubble">
+                <div class="date-text">
+                  <p>{{ dateGroup.date | date: getDateSeparatorDateFormat(dateGroup.date) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="message-groups">
+              <ng-container *rxFor="let messageGroup of select(['messageGroups']); trackBy: trackMessageGroupByIdx; let isLastGroup = last;">
+                <div class="message-group" [class.is-last-in-group]="isLastGroup">
+                  <ng-container *rxFor="let message of messageGroup; trackBy: trackMessageById; let isFirstInGroup = first; let isLastInGroup = last; renderCallback: _messagesRenderCallback$;">
+                    <div class="chat-message-wrapper" [class.is-last-in-group]="isLastInGroup">
+                      <app-chat-message
+                        [message]="message"
+                        [attr.data-message-id]="message.id"
+
+                        [isHighlighted]="highlightedMessageId === message.id"
+                        [isSelectionModeOn]="isSelectionModeOn"
+                        [hasTail]="isLastInGroup"
+                        [isFirstInGroup]="isFirstInGroup"
+                        [isLastInGroup]="isLastInGroup"
+
+                        (onSelect)="onSelectMessage($event)"
+                        (onUnselect)="onUnselectMessage($event)"
+                        (onDelete)="onDeleteMessage.emit($event)"
+                        (onCopy)="onCopyMessage.emit($event)"
+                        (onReply)="onReplyMessage.emit($event)"
+                        (onEdit)="onEditMessage.emit($event)"
+                        (onForward)="onForwardMessage.emit($event)"
+                        (onCancelSelection)="onCancelSelectionMessage.emit($event)"
+                        (onDeleteSelected)="onDeleteSelectedMessage.emit($event)"
+                        (onForwardSelected)="onForwardSelectedMessage.emit($event)"
+                      >
+                      </app-chat-message>
+                    </div>
+                  </ng-container>
+                </div>
+              </ng-container>
+            </div>
+          </div>
         </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-template #noMessagesTemplate>
+      <div class="no-messages-wrapper">
+        <div class="no-messages">
+          <p class="title">No messages yet</p>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+  <div *ngIf="scrolledUp" class="jump-to-latest-message-wrapper" (click)="jumpToLatestMessage()" (keyup.enter)="jumpToLatestMessage()">
+    <div class="jump-to-latest-message">
+      <button pRipple pButton class="p-button-rounded p-button-raised p-button-secondary" [icon]="getJumpToLatestMessageBtnIcon()">
+      </button>
+      <p-badge [hidden]="unreadMessagesAmount < 1" [value]="unreadMessagesAmount.toString()"></p-badge>
     </div>
+  </div>
 </div>

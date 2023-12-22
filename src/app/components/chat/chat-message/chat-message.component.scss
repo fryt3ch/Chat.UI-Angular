@@ -3,12 +3,28 @@
   flex-direction: row;
   justify-content: flex-start;
 
-  padding: 0 10px;
-
   &.is-in {
     .bubble {
-      background-color: var(--surface-d);
-      border-radius: 8px 16px 16px 0;
+      --bubble-background-color: var(--surface-d);
+
+      border-radius: 5px 15px 15px 5px;
+
+      .bubble-tail {
+        inset-inline-start: -9px;
+        transform: translateY(1px) scaleX(calc(-1 * -1));
+      }
+    }
+
+    &.has-tail {
+      .bubble {
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    &.is-first-in-group {
+      .bubble {
+        border-top-left-radius: 15px;
+      }
     }
   }
 
@@ -16,44 +32,168 @@
     justify-content: flex-end;
 
     .bubble {
-      background-color: var(--primary-700);
-      border-radius: 16px 8px 0 16px;
+      --bubble-background-color: var(--primary-700);
+
+      border-radius: 15px 5px 5px 15px;
 
       .bubble-status {
         justify-content: flex-start;
+      }
+
+      --peer-color-rgb: var(--peer-out-color-rgb);
+    }
+
+    &.has-tail {
+      .bubble {
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &.is-first-in-group {
+      .bubble {
+        border-top-right-radius: 15px;
       }
     }
   }
 
   &.is-selected {
     .bubble {
-      background-color: var(--primary-600);
+      --bubble-background-color: var(--primary-600);
+    }
+  }
+
+  &.is-highlighted {
+    position: relative;
+    z-index: 0;
+
+    &::after {
+      content: '';
+
+      background-color: var(--highlight-bg);
+      transition: background-color 0.5s ease-out;
+
+      width: 200%;
+      height: 100%;
+      top: 0;
+      left: -50%;
+
+      position: absolute;
+      z-index: -1;
     }
   }
 }
 
 .bubble {
-  max-width: 300px;
+  max-width: 50%;
 
-  margin: 0 0 8px 0;
   padding: 12px;
 
-  display: inline-block;
-  white-space: pre;
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  background-color: var(--bubble-background-color);
+  color: #ffffff;
+
+  .quoted {
+    position: relative;
+    background-color: rgba(var(--peer-color-rgb, var(--peer-out-color-rgb)), 0.1);
+
+    user-select: none;
+    cursor: pointer;
+
+    margin-bottom: 0.5rem;
+
+    --peer-color: rgb(var(--peer-color-rgb, var(--peer-out-color-rgb)));
+
+    border-radius: 0.25rem;
+    overflow: hidden;
+
+    .content-wrapper {
+      .content {
+        display: flex;
+        flex-direction: column;
+
+        padding: 3px 0;
+        padding-inline-end: 0.375rem;
+        margin-inline-start: 0.5rem;
+      }
+
+      .text-group {
+        display: flex;
+        flex-direction: column;
+
+        .title {
+
+        }
+
+        .subtitle {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
+    }
+
+    >::before {
+      content: " ";
+      position: absolute;
+      inset-inline-start: 0;
+      top: 0;
+      bottom: 0;
+      flex: 0 0 auto;
+      width: 0.1875rem;
+      background: var(--peer-color);
+    }
+
+    >:hover {
+      background-color: rgba(var(--peer-color-rgb, var(--peer-out-color-rgb)), 0.2);
+    }
+  }
+
+  .forwarded {
+    user-select: none;
+
+    --peer-color: rgb(var(--peer-color-rgb, var(--peer-out-color-rgb)));
+
+    .text-group {
+      .name {
+        cursor: pointer;
+      }
+    }
+  }
 
   .bubble-content {
-
+    display: inline-block;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   .bubble-status {
-    display: flex;
-    justify-content: flex-end;
-    flex-direction: row;
     font-size: 10px;
 
     user-select: none;
+
+    float: right;
+
+    color: var(--text-color-secondary);
   }
+
+  .bubble-tail {
+    position: absolute;
+    width: 11px;
+    height: 20px;
+    bottom: 0;
+    display: block;
+    fill: var(--bubble-background-color);
+
+    inset-inline-end: -9px;
+    transform: translateY(1px) scaleX(calc(1 * -1));
+  }
+}
+
+.colored-name {
+  color: var(--peer-color);
 }

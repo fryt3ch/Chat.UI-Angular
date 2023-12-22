@@ -1,6 +1,6 @@
 ﻿export interface ApiResult {
   succeeded: boolean;
-  error: ApiResultError | null;
+  error?: ApiResultError;
 
   message: string;
 }

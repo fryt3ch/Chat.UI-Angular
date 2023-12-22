@@ -1,0 +1,18 @@
+<div class="container">
+  <qrcode
+    [qrdata]="qrData"
+    [allowEmptyString]="true"
+    [ariaLabel]="'QR Code image with the following content...'"
+    [cssClass]="'demoBorderRadius'"
+    [colorDark]="colorDark"
+    [colorLight]="colorLight"
+    [elementType]="'img'"
+    [errorCorrectionLevel]="'M'"
+    [margin]="4"
+    [scale]="1"
+    [title]="'A custom title attribute'"
+    [width]="300"
+  ></qrcode>
+
+  <p-colorPicker [(ngModel)]="colorDark" format="hex" appendTo="body"></p-colorPicker>
+</div>

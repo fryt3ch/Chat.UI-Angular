@@ -1,11 +1,13 @@
 import {ChatMessageDto} from "./chat-message-dto";
 
 export interface EditChatMessageDto {
-    chatId: string;
+  chatId: string;
 
-    messageDto: ChatMessageDto;
+  messageDto: ChatMessageDto;
 }
 
 export interface EditChatMessageRequestDto {
-    content: string;
+  chatId: string,
+  messageId: string,
+  content: string;
 }

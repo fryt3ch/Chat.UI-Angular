@@ -1,8 +1,9 @@
 export interface DeleteChatMessagesDto {
     chatId: string,
-    messageIds: string[],
+    messages: string[],
 }
 
 export interface DeleteChatMessagesRequestDto {
+    chatId: string,
     messageIds: string[],
 }

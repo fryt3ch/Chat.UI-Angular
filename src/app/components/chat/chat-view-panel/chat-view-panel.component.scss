@@ -7,20 +7,22 @@
 }
 
 .header-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 0.625rem;
+  padding: 0.625rem 1.25rem;
   background-color: var(--surface-b);
 
+  height: 85px;
+
+  user-select: none;
+
   .header {
+    height: 100%;
     width: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 
     .header-info {
-      padding-left: 0.625rem;
       width: 100%;
 
       cursor: pointer;
@@ -34,22 +36,25 @@
   }
 
   .selection-mode-header {
+    height: 100%;
     width: 100%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 
     .header-buttons {
       display: flex;
       flex-direction: row;
-      gap: 1.0rem;
+      gap: 1rem;
     }
   }
 }
 
-.messages {
+.messages-container {
   height: 100%;
-  max-height: 100%
+
+  overflow-y: hidden;
 }
 
 .input-container {
@@ -66,8 +71,12 @@
     padding: 1rem;
     justify-content: space-between;
 
+    user-select: none;
+
     .edit {
       @apply flex flex-row items-center w-full;
+
+      cursor: pointer;
 
       .edit-icon {
         color: var(--primary-color);
@@ -75,8 +84,6 @@
 
       .edit-content {
         @apply flex flex-col ml-5;
-
-        cursor: pointer;
 
         .edit-title {
           color: var(--primary-color);
@@ -92,13 +99,15 @@
   .input {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: end;
 
     >textarea {
       border-radius: 0;
       border: none;
 
       box-shadow: none;
+
+      max-height: 25vh;
     }
   }
 }

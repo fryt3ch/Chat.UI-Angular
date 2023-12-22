@@ -4,7 +4,7 @@ import {SignInRequestDto} from "../../models/auth/sign-in-request-dto";
 import {SignUpRequestDto} from "../../models/auth/sign-up-request-dto";
 import {Router} from "@angular/router";
 import {UserDto} from "../../models/auth/user-dto";
-import {BehaviorSubject, catchError, Observable, tap, throwError} from "rxjs";
+import {BehaviorSubject, catchError, EMPTY, Observable, tap, throwError} from "rxjs";
 import {ApiResult} from "../../models/common/api-result";
 import {ChatService} from "../chat/chat.service";
 import {UserProfileService} from "../user-profile/user-profile.service";
@@ -23,21 +23,22 @@ export class AuthService {
     public get user(): UserDto | undefined { return this._user$.value; };
     public get isSignedIn(): boolean { return this._isSignedIn$.value; };
 
-    constructor(private httpClient: HttpClient, private router: Router, private chatService: ChatService, private userProfileService: UserProfileService) {
+    constructor(private httpClient: HttpClient, private router: Router, private userProfileService: UserProfileService) {
         this._user$.subscribe(x => {
            if (x) {
                this._isSignedIn$.next(true);
 
                this.userProfileService.get(x.id, { full: true })
-                   .subscribe(x => {
-                       this.userProfileService.userProfile$.next(UserProfile.fromDto(x));
-                   });
-
-               this.chatService.startConnection().subscribe();
+                 .pipe(
+                   catchError((err, caught) => {
+                     return EMPTY;
+                   }),
+                 )
+                 .subscribe(x => {
+                     this.userProfileService.userProfile$.next(x);
+                 });
            } else {
                this._isSignedIn$.next(false);
-
-               this.chatService.stopConnection().subscribe();
            }
         });
     }

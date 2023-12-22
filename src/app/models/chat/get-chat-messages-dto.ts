@@ -1,7 +1,16 @@
-export interface GetChatMessagesRequestDto {
-  offset: number,
-  count: number,
+import {ChatMessageDto} from "./chat-message-dto";
 
-  minDate?: Date,
-  maxDate?: Date,
+export interface GetChatMessagesRequestDto {
+  chatId?: string,
+
+  limit: number,
+  offsetId?: string,
+  offsetDate?: string,
+  offset?: number,
+
+  containsText?: string,
+}
+
+export interface GetChatMessagesDto {
+  messages: ChatMessageDto[],
 }

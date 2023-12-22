@@ -1,7 +1,87 @@
 .chat-preview-panel {
-  @apply flex flex-col h-full w-full;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+
+  user-select: none;
+}
+
+.header {
+  .input-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    background-color: var(--surface-b);
+
+    .input-wrapper {
+      >input {
+        width: 100%;
+        border-radius: 0;
+        border: none;
+        box-shadow: none !important;
+      }
+    }
+
+    .extra-buttons-wrapper {
+      display: flex;
+      flex-direction: row;
+    }
+  }
 }
 
 .previews {
-  @apply h-full w-full;
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  overflow-y: hidden;
+
+  .previews-scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  .search-splitter {
+    padding: 0.75rem;
+    background-color: var(--surface-b);
+
+    color: var(--text-color-secondary);
+  }
+
+  .chat-search-in-container {
+    padding: 0.75rem;
+
+    .chat-search-in {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      overflow: hidden;
+
+      .title {
+        margin-left: 0.825rem;
+        width: 100%;
+
+        white-space: nowrap;
+      }
+
+      .extra-btn {
+        margin-inline-start: 1.5rem;
+      }
+    }
+  }
+
+  .jump-to-latest-message-wrapper {
+    position: absolute;
+
+    bottom: 0.75rem;
+    right: 1.25rem;
+  }
+}
+
+.previews-list-scroll {
+
 }

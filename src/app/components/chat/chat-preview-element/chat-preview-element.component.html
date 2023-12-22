@@ -1,7 +1,31 @@
-<div class="chat-preview-element" [class.is-selected]="isActive">
-  <app-chat-member-avatar [avatarUrl$]="chat.avatarPhotoUrl$" [displayName]="chat.displayName" [isOnline]="chat.isOnline" [color]="getUserProfileColorProperties(chat.color).hex" size="xlarge"></app-chat-member-avatar>
-  <div class="flex flex-col ml-3.5 justify-between w-full overflow-hidden">
-    <p>{{ chat.displayName }}</p>
-    <p *ngIf="chat.lastMessage as lastMessage" class="whitespace-nowrap overflow-hidden overflow-ellipsis">{{ lastMessage.content }}</p>
+<div class="chat-preview-element" [class.is-selected]="isSelected" pRipple>
+  <div class="avatar-wrapper">
+    <app-chat-member-avatar [avatarUrl$]="avatarUrl$" [displayName]="displayName" [isOnline]="isOnline" [color]="avatarColorHex" size="xlarge"></app-chat-member-avatar>
+  </div>
+  <div class="content">
+    <div class="column">
+      <div class="title-row">
+        <p class="title">{{ displayName }}</p>
+
+        <div class="details">
+          <div class="time">
+            {{ timeText }}
+          </div>
+        </div>
+      </div>
+      <ng-container *ngIf="message; else statusTextTemplate;">
+        <div class="subtitle-row">
+          <p class="subtitle">{{ message.content }}</p>
+
+          <p-badge class="unread-badge-wrapper" [hidden]="unreadMessagesAmount === 0" [value]="unreadMessagesAmount.toString()"></p-badge>
+        </div>
+      </ng-container>
+    </div>
   </div>
 </div>
+
+<ng-template #statusTextTemplate>
+  <div class="subtitle-row">
+    <p class="subtitle">{{ statusText }}</p>
+  </div>
+</ng-template>

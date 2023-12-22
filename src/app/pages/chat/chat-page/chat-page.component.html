@@ -1,14 +1,24 @@
-<div class="h-screen w-screen overflow-hidden">
-    <p-splitter [minSizes]="[15, 30]" [panelSizes]="[30, 70]" styleClass="h-full w-full rounded-none">
+<div class="wrapper">
+  <div class="sections">
+    <div class="menu-panel-wrapper">
+      <app-chat-menu-panel></app-chat-menu-panel>
+    </div>
+
+    <div class="splitter-wrapper">
+      <p-splitter [minSizes]="[15, 30]" [panelSizes]="[30, 70]" styleClass="chat-page-splitter" [stateStorage]="'local'" [stateKey]="'chats-splitter'">
         <ng-template pTemplate>
-            <div class="w-full">
-                <app-chat-preview-panel></app-chat-preview-panel>
-            </div>
+          <div class="chat-preview-panel-wrapper">
+            <app-chat-preview-panel></app-chat-preview-panel>
+          </div>
         </ng-template>
         <ng-template pTemplate>
-            <div class="w-full">
-                <app-chat-view-panel *ngIf="chatService.activeChat$ | async as selectedChat" [chat]="selectedChat"></app-chat-view-panel>
-            </div>
+          <div class="chat-view-panel-wrapper">
+            <app-chat-view-panel *ngIf="chatService.activeChat$ | async as activeChat" [chat]="activeChat"></app-chat-view-panel>
+          </div>
         </ng-template>
-    </p-splitter>
+      </p-splitter>
+    </div>
+
+    <p-contextMenu #contextMenu></p-contextMenu>
+  </div>
 </div>

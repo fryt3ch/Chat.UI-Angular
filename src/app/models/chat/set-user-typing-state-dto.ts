@@ -7,5 +7,6 @@ export interface SetUserTypingStateDto {
 }
 
 export interface SetUserTypingStateRequestDto {
+    chatId: string,
     state: ChatUserTypingState,
 }

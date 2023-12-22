@@ -1,0 +1,153 @@
+.wrapper {
+  user-select: none;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 0 0 1rem 0;
+}
+
+.content {
+  .photos {
+
+  }
+
+  .no-photos {
+    .content {
+      display: flex;
+
+      .avatar-wrapper {
+        margin-right: 1rem;
+      }
+
+      .info-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .subtitle {
+          color: var(--text-color-secondary);
+        }
+      }
+    }
+  }
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+
+  margin: 1rem 0 0 0;
+
+  cursor: pointer;
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    border-radius: 10px;
+
+    padding: 1rem;
+
+    &:hover {
+      background-color: var(--surface-b);
+    }
+
+    .content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      margin: 0 0 0 2rem;
+
+      .text-group {
+        display: flex;
+        flex-direction: column;
+
+        .title {
+
+        }
+
+        .subtitle {
+          color: var(--text-color-secondary);
+        }
+      }
+    }
+  }
+}
+
+:host ::ng-deep {
+  .custom-galleria {
+    &.p-galleria {
+      &.fullscreen {
+        display: flex;
+        flex-direction: column;
+
+        .p-galleria-content {
+          flex-grow: 1;
+          justify-content: center;
+        }
+      }
+
+      .p-galleria-content {
+        position: relative;
+      }
+
+      .p-galleria-thumbnail-wrapper {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      .p-galleria-thumbnail-items-container {
+        width: 100%;
+      }
+
+      .p-galleria-caption {
+        background: linear-gradient(360deg, rgba(0, 0, 0, 0.5) 8.98%, rgba(0, 0, 0, 0) 100%);
+      }
+
+      .custom-galleria-footer {
+        display: flex;
+        align-items: center;
+        background-color: rgba(0, 0, 0, .9);
+        color: #ffffff;
+
+        > button {
+          background-color: transparent;
+          color: #ffffff;
+          border: 0 none;
+          border-radius: 0;
+          margin: .2rem 0;
+
+          &.fullscreen-button {
+            margin-left: auto;
+          }
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+        }
+      }
+
+      .title-container {
+        > span {
+          font-size: .9rem;
+          padding-left: .829rem;
+
+          &.title {
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}

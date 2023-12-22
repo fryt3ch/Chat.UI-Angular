@@ -18,7 +18,12 @@ export class HomePageComponent {
 
   protected selectedLanguage: Language;
 
-  constructor(protected authService: AuthService, protected router: Router, protected themeService: ThemeService, private translateService: TranslateService) {
+  constructor(
+    protected authService: AuthService,
+    protected router: Router,
+    protected themeService: ThemeService,
+    private translateService: TranslateService
+  ) {
     this.selectedLanguage = this.languageTypes.find(x => x == this.getCurrentLanguage()) as Language;
   }
 

@@ -1,7 +1,7 @@
 import {
   Component,
-  ElementRef,
-  EventEmitter,
+  DestroyRef,
+  ElementRef, EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
@@ -9,183 +9,232 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {Chat} from "../../../models/chat/chat";
-import {InputTextarea} from "primeng/inputtextarea";
+import {Chat, ChatType, UserChat} from "../../../models/chat/chat";
 import {ChatService} from "../../../services/chat/chat.service";
 import {ChatMessage} from "../../../models/chat/chat-message";
-import {CdkVirtualScrollViewport } from "@angular/cdk/scrolling";
 import {AuthService} from "../../../services/auth/auth.service";
 import {SendChatMessageRequestDto} from "../../../models/chat/send-chat-message-dto";
 import {
-  BehaviorSubject,
+  catchError,
   debounceTime,
+  EMPTY,
   filter,
+  first, firstValueFrom,
   fromEvent,
-  Observable, of,
+  lastValueFrom,
+  map,
+  of,
+  pairwise,
   ReplaySubject,
   Subject,
   takeUntil,
   tap
 } from "rxjs";
-import {ContextMenu} from "primeng/contextmenu";
-import {EmojiComponent, EmojiEvent} from "@ctrl/ngx-emoji-mart/ngx-emoji";
+import {EmojiComponent} from "@ctrl/ngx-emoji-mart/ngx-emoji";
 import {Menu} from "primeng/menu";
-import {ConfirmationService, ConfirmEventType} from "primeng/api";
+import {DialogService} from "primeng/dynamicdialog";
+import {ChatPickerModalComponent} from "../chat-picker-modal/chat-picker-modal.component";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {ConfirmationModalComponent} from "../../confirmation-modal/confirmation-modal.component";
+import {ModalService} from "../../../services/modal.service";
 
 @Component({
   selector: 'app-chat-view-panel',
   templateUrl: './chat-view-panel.component.html',
   styleUrls: ['./chat-view-panel.component.scss'],
-  providers: [ConfirmationService],
 })
 export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
-  @ViewChild('messageInput') messageInput!: InputTextarea;
+  @ViewChild('messageInput') messageInput!: ElementRef;
   @ViewChild('emojiPicker') emojiPicker!: EmojiComponent;
-/*  @ViewChild('messagesScrollViewport') messagesScrollViewport!: InfiniteScrollDirective;*/
-  @ViewChild('chatMessageContextMenu') chatMessageContextMenu!: ContextMenu;
   @ViewChild('headerMenu') headerMenu!: Menu;
 
-  @Input({ required: true, }) public chat!: Chat;
+  @Input({ required: true }) public chat!: Chat;
 
-  protected messageInputModel$: ReplaySubject<string> = new ReplaySubject<string>(1);
+  protected messageInputValue$: Subject<string> = <Subject<string>>(new Subject<string>)
+    .pipe(
+      tap(value => {
+        this.messageInputValue = value;
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    );
+
   protected messageInputValue: string = '';
   protected emojiInputValue$: Subject<string> = new Subject<string>;
 
-  protected readonly selectedMessages: Set<ChatMessage> = new Set<ChatMessage>();
-  protected readonly messageSelected$: ReplaySubject<ChatMessage> = new ReplaySubject<ChatMessage>(1);
-  protected readonly messageUnselected$: ReplaySubject<ChatMessage> = new ReplaySubject<ChatMessage>(1);
-
-  private messagesPreloaded: boolean = false;
-
-  private loadMessagesAmount: number = 25;
-
   protected isSelectionModeOn: boolean = false;
 
-  private readonly _destroy$ = new Subject<void>();
+  private _chatChanged$: ReplaySubject<void> = new ReplaySubject<void>(1);
 
-  constructor(private chatService: ChatService, private authService: AuthService, private confirmationService: ConfirmationService) {
-    console.log("constr");
+  protected selectedMessages!: Set<ChatMessage>;
+
+  protected selectedMessagesCanForwardAmount: number = 0;
+  protected selectedMessagesCanDeleteAmount: number = 0;
+
+  protected chatStatusText: string = '';
+
+  protected inputPickedFiles: Subject<FileList> = new Subject<FileList>();
+
+  constructor(
+    protected chatService: ChatService,
+    private authService: AuthService,
+    private modalService: ModalService,
+    private destroyRef: DestroyRef,
+  ) {
+
   }
 
   ngOnInit() {
-    this.emojiInputValue$.pipe(takeUntil(this._destroy$)).subscribe(next => {
-      this.messageInputValue += next;
+    this.emojiInputValue$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(next => {
+        this.messageInputValue += next;
+      });
+
+    this.chatService.selectedMessages$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(messages => {
+        this.selectedMessages = messages;
+
+        this.selectedMessagesCanDeleteAmount = 0;
+        this.selectedMessagesCanForwardAmount = 0;
+
+        if (messages.size > 0) {
+          this.isSelectionModeOn = true;
+
+          this.selectedMessages.forEach(x => {
+            if (x.canBeDeleted) {
+              this.selectedMessagesCanDeleteAmount++;
+            }
+
+            if (x.canBeForwarded) {
+              this.selectedMessagesCanForwardAmount++;
+            }
+          });
+        } else {
+          this.isSelectionModeOn = false;
+        }
+      });
+
+    this.messageInputValue$.pipe(
+      tap(x => {
+        if (this.chat.messagesToEdit$.value)
+          return;
+
+        this.chatService.activeChatIsTyping$.next(true);
+      }),
+      debounceTime(1_500),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(x => {
+      this.chatService.activeChatIsTyping$.next(false);
     });
 
-    this.chatService.newMessage$.pipe(takeUntil(this._destroy$)).subscribe((x) => {
-      if (x.chat != this.chat)
-        return;
-
-/*      if (this.messagesScrollViewport.measureScrollOffset("bottom") == 0) {
-        setTimeout(() => {
-          this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "smooth");
-        }, 0)
-      }*/
-    });
-
-    this.chatService.deletedMessage$.pipe(
-        takeUntil(this._destroy$),
-        filter((x) => {
-          if (x.chat != this.chat)
+    fromEvent(document.body, 'dragenter')
+      .pipe(
+        map(event => <DragEvent>event),
+        filter(event => !event.relatedTarget),
+        filter(event => {
+          if (!event.dataTransfer || !event.dataTransfer.items || event.dataTransfer.items)
             return false;
 
           return true;
-        })
-    ).subscribe(message => {
-      this.removeMessageFromSelected(message);
-    });
-
-    this.messageSelected$.pipe(takeUntil(this._destroy$)).subscribe(message => {
-      if (!this.isSelectionModeOn)
-        this.isSelectionModeOn = true;
-
-      console.log('Selected', message.id);
-    });
-
-    this.messageUnselected$.pipe(takeUntil(this._destroy$)).subscribe(message => {
-      if (this.isSelectionModeOn && this.selectedMessages.size == 0)
-        this.isSelectionModeOn = false;
-
-      console.log('Unselected', message.id);
-    });
-
-    this.chat.messageToEdit$.pipe(takeUntil(this._destroy$)).subscribe(next => {
-      if (next) {
-        this.chat.lastMessageInputValue = this.messageInputValue;
-
-        this.messageInputValue = this.chat.messageToEdit$.value!.content;
-      } else {
-        if (this.chat.lastMessageInputValue) {
-          this.messageInputValue = this.chat.lastMessageInputValue;
-        } else {
-          this.messageInputValue = "";
-        }
-      }
-    });
-
-    this.messageInputModel$.pipe(takeUntil(this._destroy$)).subscribe(x => {
-      this.messageInputValue = x;
-    });
-
-    this.messageInputModel$.pipe(
-        tap(x => {
-          if (this.chat.messageToEdit$.value)
-            return;
-
-          this.chatService.selectedChatIsTyping$.next(true);
         }),
-        debounceTime(1_500),
-        takeUntil(this._destroy$),
-    ).subscribe(x => {
-      this.chatService.selectedChatIsTyping$.next(false);
-    });
+        map(event => event.dataTransfer!.items),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(event => {
+        let leaveSub = fromEvent(document.body, 'dragleave')
+          .pipe(
+            map(event => <DragEvent>event),
+            filter(event => !event.relatedTarget),
+            first(),
+            takeUntilDestroyed(this.destroyRef),
+          )
+          .subscribe(event => {
+            dropSub.unsubscribe();
+          });
+
+        let dropSub = fromEvent(document.body, 'drop')
+          .pipe(
+            map(event => <DragEvent>event),
+            filter(event => !event.relatedTarget),
+            first(),
+            takeUntilDestroyed(this.destroyRef),
+          )
+          .subscribe(event => {
+            event.preventDefault();
+
+            leaveSub.unsubscribe();
+
+            this.inputPickedFiles.next(event.dataTransfer!.files);
+          });
+      });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log("change")
+    if (changes['chat']) {
+      const prevChat = changes['chat'].previousValue as (Chat | undefined);
+      const actualChat = changes['chat'].currentValue as Chat;
 
-    console.log(this.chat.id);
+      if (prevChat && prevChat.id === actualChat.id)
+        return;
 
-    const currentMessageInputValue = this.messageInputValue;
+      this._chatChanged$.next();
+      this._chatChanged$.complete();
 
-    if (this.chat.lastMessageInputValue) {
-      this.messageInputValue = this.chat.lastMessageInputValue;
-    } else {
-      this.messageInputValue = '';
-    }
+      this._chatChanged$ = new ReplaySubject<void>(1);
 
-    if (changes["chat"].previousValue as Chat && currentMessageInputValue.length > 0) {
-      changes["chat"].previousValue.chatLastMessageInputValue = currentMessageInputValue;
-    }
+      this.chat.messagesToEdit$
+        .pipe(
+          pairwise(),
+          takeUntil(this._chatChanged$),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe(([oldResult, result]) => {
+          if (result) {
+            if (oldResult) {
+              this.resetInputValue();
+            }
 
-    if (!this.messagesPreloaded) {
-      this.chatService.getChatMessages(this.chat, { offset: this.chat.messages.length, count: this.loadMessagesAmount, })
+            this.chat.lastMessageInputValue = this.messageInputValue;
+
+            if (result.editType === 'edit') {
+              this.messageInputValue = result.messages[0].content;
+            } else {
+              this.messageInputValue = '';
+            }
+
+            this.focusInput();
+          } else {
+            this.resetInputValue();
+          }
+        });
+
+      if (this.chat instanceof UserChat) {
+        this.chat.membersTyping$
           .pipe(
+            takeUntil(this._chatChanged$),
+            takeUntilDestroyed(this.destroyRef),
+          )
+          .subscribe(value => {
+            if (value.length > 0) {
+              this.chatStatusText = `is typing...`;
+            } else {
+              this.chatStatusText = "last seen a long time ago";
+            }
+        });
+      }
 
-          ).subscribe(next => {
-        if (next.length === 0) {
+      const currentMessageInputValue = this.messageInputValue;
 
-        } else {
-          this.chat.addMessages(next.reverse(), true);
-        }
+      if (this.chat.lastMessageInputValue) {
+        this.messageInputValue = this.chat.lastMessageInputValue;
+      } else {
+        this.messageInputValue = '';
+      }
 
-/*        setTimeout(() => {
-          if (this.chat.lastMessageIdx >= 0)
-            this.messagesScrollViewport.
-            this.messagesScrollViewport.scrollToIndex(this.chat.lastMessageIdx, "instant");
-          else
-            this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "instant");
-        }, 0);*/
-
-        this.messagesPreloaded = true;
-      });
-    } else {
-/*      setTimeout(() => {
-        if (this.chat.lastMessageIdx >= 0)
-          this.messagesScrollViewport.scrollToIndex(this.chat.lastMessageIdx, "instant");
-        else
-          this.messagesScrollViewport.scrollToIndex(this.chat.messages.length, "instant");
-      }, 0);*/
+      if (prevChat && currentMessageInputValue.length > 0) {
+        prevChat.lastMessageInputValue = currentMessageInputValue;
+      }
     }
   }
 
@@ -194,97 +243,92 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy() {
-    this._destroy$.next();
-    this._destroy$.complete();
+
   }
 
   sendMessageBtnClick() {
-    if (this.chat.messageToEdit$.value) {
-      const message = this.chat.messageToEdit$.value;
+    if (this.chat.messagesToEdit$.value?.editType === 'edit') {
+      const message = this.chat.messagesToEdit$.value!;
 
       let content = this.messageInputValue;
 
       content = this.preprocessMessageContent(content);
 
       if (content.length == 0) {
-        this.showDeleteMessagesConfirmDialog([message]);
+        this.showDeleteMessagesConfirmDialog([message.messages[0]]);
       } else {
-        this.chatService.editMessage(this.chat.id, message.id, {
+        this.chatService.editMessage({
+          chatId: this.chat.id,
+          messageId: message.messages[0].id,
           content: content,
         }).subscribe(x => {
-          this.chat.messageToEdit$.next(undefined);
+          this.chat.messagesToEdit$.next(undefined);
         });
       }
-
-    } else if (this.chat.messageToReply$.value) {
-
     } else {
       this.sendMessage();
     }
   }
 
-  protected scrolledIndexChange(idx: number) {
-    if (!this.messagesPreloaded)
-      return;
-
-    console.log(idx);
-
-    if (idx == 0) {
-      this.chatService.getChatMessages(this.chat, { offset: this.chat.messages.length, count: this.loadMessagesAmount, })
-          .pipe(
-
-          ).subscribe(next => {
-        if (next.length === 0) {
-
-        } else {
-          this.chat.addMessages(next.reverse(), true);
-
-/*          setTimeout(() => {
-            this.messagesScrollViewport.scrollToIndex(next.length, "instant");
-          }, 0);*/
-        }
-      });
-    }
-  }
-
   protected selectionModeCancel() {
-    this.selectedMessages.forEach(x => {
-      this.removeMessageFromSelected(x);
-    });
+    this.chatService.clearSelectedMessages();
   }
 
   protected selectionModeDeleteSelected() {
-    if (this.selectedMessages.size === 0)
+    const messages = [...this.selectedMessages].filter(x => x.canBeDeleted);
+
+    if (messages.length === 0)
       return;
 
-    this.showDeleteMessagesConfirmDialog([...this.selectedMessages]);
+    this.showDeleteMessagesConfirmDialog(messages);
   }
 
-  protected scrollToMessage(message: ChatMessage) {
-    const idx = this.chat.messages.findIndex(x => x == message);
+  protected selectionModeForwardSelected() {
+    const messages = [...this.selectedMessages].filter(x => x.canBeForwarded);
 
-    if (idx < 0)
+    if (messages.length === 0)
       return;
 
-/*    this.messagesScrollViewport.scrollToIndex(idx, "instant");*/
+    this.forwardMessages(messages);
   }
 
-  protected onHeaderMenuBtnClick(event: MouseEvent) {
+  protected headerMenuBtnClicked(event: MouseEvent) {
     this.headerMenu.model = [
       {
-        id: 'reply',
-        label: 'Reply',
-        icon: 'pi pi-fw pi-reply',
-        iconStyle: { 'transform': 'scaleX(-1.0)', },
+        id: 'viewProfile',
+        label: 'View profile',
+        icon: 'pi pi-fw pi-user',
+
+        command: () => {
+          this.headerClick();
+        },
       },
     ];
 
     this.headerMenu.toggle(event);
   }
 
+  protected headerSearchBtnClicked(event: MouseEvent) {
+    this.chatService.searchInChat$.next(this.chat);
+  }
+
   protected onCancelEditBtnPressed() {
-    if (this.chat.messageToEdit$.value) {
-      this.chat.messageToEdit$.next(undefined);
+    if (this.chat.messagesToEdit$.value) {
+      this.chat.messagesToEdit$.next(undefined);
+    }
+  }
+
+  protected async onEditMessagePressed() {
+    const messagesToEdit = await lastValueFrom(this.chat.messagesToEdit$.pipe(first()));
+
+    if (!messagesToEdit)
+      return;
+
+    if (messagesToEdit.editType === 'forward') {
+      this.forwardMessages(messagesToEdit.messages);
+    } else {
+      this.chatService.jumpToMessage(messagesToEdit.messages[0].id, 'center', true)
+        .subscribe();
     }
   }
 
@@ -296,17 +340,17 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
         this.sendMessageBtnClick();
       }
     } else if (event.key == "ArrowUp") {
-      if (this.messageInputValue.length === 0 && !this.chat.messageToReply$.value && !this.chat.messageToEdit$.value) {
-        let message = [...this.chat.messages].reverse().find(x => x.userId == this.authService.user!.id);
+      if (this.messageInputValue.length === 0 && !this.chat.messagesToEdit$.value) {
+        let message = [...this.chat.messages].reverse().find(x => x.canBeEdited);
 
         if (message) {
-          this.chat.messageToEdit$.next(message);
+          this.chat.messagesToEdit$.next({ chat: this.chat, messages: [message], editType: 'edit', });
         }
       }
     }
   }
 
-  protected sendMessage() {
+  protected async sendMessage() {
     let content = this.messageInputValue;
 
     content = this.preprocessMessageContent(content);
@@ -314,13 +358,39 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
     if (content.length == 0)
       return;
 
+    if (this.chat.id.startsWith('temp') && this.chat instanceof UserChat) {
+      await firstValueFrom(this.chatService.createChat({ chatType: ChatType.User, memberIds: [this.chat.member.id], }));
+    }
+
     const dto: SendChatMessageRequestDto = {
+      chatId: this.chat.id,
+
       content: content,
     };
 
-    this.chatService.sendMessage(this.chat.id, dto).pipe(
+    let quotedMessage: ChatMessage | undefined;
+
+    const messagesToEdit = this.chat.messagesToEdit$.value;
+
+    if (messagesToEdit) {
+      if (messagesToEdit.editType === 'reply') {
+        quotedMessage = messagesToEdit.messages[0];
+
+        dto.quotedMessageId = quotedMessage.id;
+      } else if (messagesToEdit.editType === 'forward') {
+        dto.sourceChatId = messagesToEdit.chat.id;
+
+        dto.forwardedMessages = messagesToEdit.messages.map(message => message.id);
+      }
+
+      this.chat.messagesToEdit$.next(undefined);
+    }
+
+    this.messageInputValue = '';
+
+    this.chatService.sendMessage(dto).pipe(
     ).subscribe(next => {
-      this.messageInputValue = '';
+
     });
   }
 
@@ -331,40 +401,126 @@ export class ChatViewPanelComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   protected showDeleteMessagesConfirmDialog(messages: ChatMessage[]) {
-    this.confirmationService.confirm({
-      message: messages.length == 1 ? `Are you sure that you want to delete this message?` : `Are you sure that you want to delete ${messages.length} messages?`,
-      icon: 'pi pi-trash',
-      accept: () => {
-        console.log('accept');
+    let message: string;
 
-        this.chatService.deleteMessages(this.chat.id, { messageIds: messages.map(x => x.id), })
-            .subscribe();
+    if (messages.length === 1)
+      message = `Are you sure that you want to delete this message?`;
+    else
+      message = `Are you sure that you want to delete ${messages.length} messages?`;
+
+    const accept = new EventEmitter<void>();
+    const reject = new EventEmitter<{ onClose: boolean, }>();
+
+    const ref = this.modalService.open(ConfirmationModalComponent, {
+      dismissableMask: true,
+      showHeader: false,
+
+      data: {
+        accept: accept, reject: reject,
       },
-      reject: (type: ConfirmEventType) => {
+    });
 
-      }
+    ref.setInput('text', message);
+    ref.setInput('closeOnClick', true);
+
+    accept.subscribe(() => {
+      let t = { messageIds: messages.map(x => x.id), };
+
+      this.chatService.deleteMessages({ chatId: this.chat.id, messageIds: messages.map(x => x.id), })
+        .pipe(
+          catchError((err, caught) => {
+            return EMPTY;
+          }),
+        )
+        .subscribe();
     });
   }
 
-  addMessageToSelected(message: ChatMessage) {
-    if (this.selectedMessages.has(message))
-      return;
-
-    this.selectedMessages.add(message);
-    this.messageSelected$.next(message);
+  protected replyToMessage(message: ChatMessage) {
+    this.chat.messagesToEdit$.next({ chat: this.chat, messages: [message], editType: 'reply', });
   }
 
-  removeMessageFromSelected(message: ChatMessage) {
-    if (this.selectedMessages.delete(message)) {
-      this.messageUnselected$.next(message);
-    }
+  protected editMessage(message: ChatMessage) {
+    this.chat.messagesToEdit$.next({ chat: this.chat, messages: [message], editType: 'edit', });
   }
 
   copyMessages(messages: ChatMessage[]) {
     of(navigator.clipboard.writeText(messages[0].content)).subscribe();
   }
 
-  onShowContextMenu() {
-    console.log('asd')
+  focusInput() {
+    this.messageInput.nativeElement.focus();
+  }
+
+  headerClick() {
+    if (this.chat instanceof UserChat) {
+      this.chatService.setActiveChatMemberProfile(this.chat.member);
+    }
+  }
+
+  resetInputValue() {
+    if (this.chat.lastMessageInputValue) {
+      this.messageInputValue = this.chat.lastMessageInputValue;
+    } else {
+      this.messageInputValue = "";
+    }
+  }
+
+  onInput(event: any) {
+    this.messageInput.nativeElement.style.height = '';
+    this.messageInput.nativeElement.style.height = `${this.messageInput.nativeElement.scrollHeight}px`;
+  }
+
+  attachFilesBtnClicked(event: MouseEvent) {
+    document.getElementById('chat-input-attach-input')!.click();
+  }
+
+  forwardMessages(messages: ChatMessage[]) {
+    const currentChat = this.chat;
+
+    let chatPicked = new EventEmitter<{ chatId: string, }>;
+
+    const ref = this.modalService.open(ChatPickerModalComponent, {
+      dismissableMask: true,
+      showHeader: false,
+
+      data: {
+        chatPicked: chatPicked,
+      }
+    });
+
+    ref.setInput('headerTitleText', 'Forward messages...');
+
+    const chatPickedSub = chatPicked.subscribe(value => {
+      const targetChat = this.chatService.getChatById(value.chatId);
+
+      if (targetChat) {
+        if (this.chatService.setActiveChat(targetChat)) {
+          if (targetChat.id === currentChat.id) {
+            this.selectionModeCancel();
+          } else {
+            if (currentChat.messagesToEdit$.value?.editType === 'forward') {
+              currentChat.messagesToEdit$.next(undefined);
+            }
+          }
+
+          targetChat.messagesToEdit$.next({ chat: this.chat, messages: messages, editType: 'forward', });
+
+          ref.close();
+        }
+      }
+    });
+
+    const messageDeletedSub = this.chat.messageDeleted$
+      .pipe(
+        filter(value => messages.some(message => message.id === value.id))
+      )
+      .subscribe(value => {
+        ref.close();
+      });
+
+    ref.onClose.subscribe(value => {
+      messageDeletedSub.unsubscribe();
+    });
   }
 }

@@ -1,9 +1,11 @@
 <div class="chat-member-avatar" [class.is-online]="isOnline">
-    <ng-container *rxIf="avatarUrl$ as avatarUrl; else emptyAvatar;">
-        <p-avatar shape="circle" [size]="size" [image]="avatarUrl"></p-avatar>
+  <ng-container *ngIf="avatarUrl$; else emptyAvatar;">
+    <ng-container *rxIf="avatarUrl$; let avatarUrl; else emptyAvatar;">
+      <p-avatar shape="circle" [size]="size" [image]="avatarUrl"></p-avatar>
     </ng-container>
-
-    <ng-template #emptyAvatar>
-        <p-avatar shape="circle" [size]="size" label="{{ initials | uppercase }}" [style]="{'background-color': color,}"></p-avatar>
-    </ng-template>
+  </ng-container>
 </div>
+
+<ng-template #emptyAvatar>
+  <p-avatar shape="circle" [size]="size" label="{{ initials | uppercase }}" [style]="{'background-color': color,}"></p-avatar>
+</ng-template>

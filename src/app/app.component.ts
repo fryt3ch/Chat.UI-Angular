@@ -4,6 +4,7 @@ import {finalize, lastValueFrom, tap} from "rxjs";
 import {ThemeService} from "./services/general/theme.service";
 import {TranslateService} from "@ngx-translate/core";
 import {getLanguageByCode, getLanguageProperties} from "./models/common/language.enum";
+import {userProfileColors} from "./models/common/user-profile-color.enum";
 
 @Component({
   selector: 'app-root',
@@ -18,6 +19,7 @@ export class AppComponent implements OnInit {
     this.themeService.initialize();
 
     this.initializeLanguage();
+    this.initializeUserProfileColors();
   }
 
   private initializeLanguage() {
@@ -47,5 +49,13 @@ export class AppComponent implements OnInit {
         }
       }
     }
+  }
+
+  private initializeUserProfileColors() {
+    userProfileColors.forEach((value, key) =>  {
+      window.document.documentElement.style.setProperty(`--peer-${key}-color-rgb`, `${value.rgb.r}, ${value.rgb.g}, ${value.rgb.b}`);
+    });
+
+    window.document.documentElement.style.setProperty('--peer-out-color-rgb', '255, 255, 255');
   }
 }

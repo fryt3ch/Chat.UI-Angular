@@ -9,7 +9,7 @@ export interface UserProfileDto {
   surname: string;
   gender: Gender;
   country: Country;
-  birthDate: Date;
+  birthDate: string;
   avatarPhotoId: string | undefined;
   color: UserProfileColor;
 }

@@ -3,7 +3,7 @@ import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Country, getCountryFlagEmoji, getCountryNameLocale} from "../../../models/common/country.enum";
 import {CreateUserProfileRequestDto} from "../../../models/user-profile/create-user-profile-dto";
 import {UserProfileService} from "../../../services/user-profile/user-profile.service";
-import {catchError, finalize, of, pipe, tap} from "rxjs";
+import {catchError, EMPTY, finalize, of, pipe, tap} from "rxjs";
 import {Router} from "@angular/router";
 import {AuthService} from "../../../services/auth/auth.service";
 import {ToastrService} from "ngx-toastr";
@@ -28,7 +28,7 @@ export class CreateUserProfilePageComponent {
       Validators.required,
     ]),
     surname: new FormControl<string>('', [
-      Validators.required,
+      //Validators.required,
     ]),
     birthDate: new FormControl<Date>(new Date(Date.parse("2022-04-17")), [
       Validators.required,
@@ -68,51 +68,52 @@ export class CreateUserProfilePageComponent {
     this.userProfileService.create(user, createDto)
       .pipe(
         tap(apiResult => {
-          if (this.avatarFile != null)
-          {
-            let postPhotoDto: PostPhotoRequestDto = {
-
-            };
-
-            this.userProfileService.postPhoto(this.avatarFile, postPhotoDto)
-              .pipe(
-                tap(apiResult => {
-                  let updateAvatarDto: UpdateUserProfileAvatarRequestDto = {
-                    photoId: apiResult.data,
-                  };
-
-                  this.userProfileService.updateAvatar(updateAvatarDto)
-                    .pipe(
-                      tap((apiResult) => {
-                        this.toastr.success("You've successfully created your profile! Here it is");
-
-                        this.router.navigate(['/profile', user.username], { onSameUrlNavigation: "reload", });
-                      }),
-                      catchError(err => {
-                        this.toastr.warning("Something went wrong while applying your avatar!");
-
-                        return of(err);
-                      }),
-                    )
-                    .subscribe();
-                }),
-                catchError((err) => {
-                  return of();
-                }),
-              )
-              .subscribe();
-          }
-          else {
-            this.toastr.success("You've successfully created your profile! Here it is");
-
-            this.router.navigate(['/profile', user.username], { onSameUrlNavigation: "reload", });
-          }
         }),
         catchError((err) => {
-          return of();
+          return EMPTY;
         })
       )
-      .subscribe();
+      .subscribe(apiResult => {
+        if (this.avatarFile != null)
+        {
+          let postPhotoDto: PostPhotoRequestDto = {
+
+          };
+
+          this.userProfileService.postPhoto(this.avatarFile, postPhotoDto)
+            .pipe(
+              tap(apiResult => {
+                let updateAvatarDto: UpdateUserProfileAvatarRequestDto = {
+                  photoId: apiResult.data,
+                };
+
+                this.userProfileService.updateAvatar(updateAvatarDto)
+                  .pipe(
+                    tap((apiResult) => {
+                      this.toastr.success("You've successfully created your profile! Here it is");
+
+                      this.router.navigate(['/profile', user.username], { onSameUrlNavigation: "reload", });
+                    }),
+                    catchError(err => {
+                      this.toastr.warning("Something went wrong while applying your avatar!");
+
+                      return of(err);
+                    }),
+                  )
+                  .subscribe();
+              }),
+              catchError((err) => {
+                return of();
+              }),
+            )
+            .subscribe();
+        }
+        else {
+          this.toastr.success("You've successfully created your profile! Here it is");
+
+          this.router.navigate(['/profile', user.username], { onSameUrlNavigation: "reload", });
+        }
+      });
 
     //console.log(JSON.stringify(createDto));
   }

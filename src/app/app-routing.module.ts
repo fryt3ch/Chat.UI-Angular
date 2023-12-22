@@ -23,6 +23,7 @@ const routes: Routes = [
 
   { path: 'profile/:username', component: UserProfilePageComponent, },
 
+  { path: 'chat/:id', component: ChatPageComponent, canActivate: [signedInGuard] },
   { path: 'chat', component: ChatPageComponent, canActivate: [signedInGuard] },
 
   { path: '**', component: NotFoundPageComponent, },

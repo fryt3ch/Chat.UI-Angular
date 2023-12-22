@@ -1,8 +1,9 @@
 .chat-member-avatar {
+  display: flex;
   position: relative;
 
   &.is-online::after {
-    content: ' ';
+    content: '';
     $radius: 20%;
 
     width: $radius;
@@ -15,5 +16,9 @@
     bottom: 5%;
     right: 5%;
     border-radius: 100%;
+  }
+
+  >* {
+    display: inherit;
   }
 }

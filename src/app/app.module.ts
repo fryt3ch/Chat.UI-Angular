@@ -67,6 +67,20 @@ import {BadgeModule} from "primeng/badge";
 import {ConfirmDialogModule} from "primeng/confirmdialog";
 import { ChatMessageListComponent } from './components/chat/chat-message-list/chat-message-list.component';
 import {RxFor} from "@rx-angular/template/for";
+import { ChatMemberProfileModalComponent } from './components/chat/chat-member-profile-modal/chat-member-profile-modal.component';
+import {GalleriaModule} from "primeng/galleria";
+import {RippleModule} from "primeng/ripple";
+import {InputSwitchModule} from "primeng/inputswitch";
+import { QrcodeModalComponent } from './components/qrcode-modal/qrcode-modal.component';
+import {QRCodeModule} from "angularx-qrcode";
+import {ColorPickerModule} from "primeng/colorpicker";
+import { ChatPickerModalComponent } from './components/chat/chat-picker-modal/chat-picker-modal.component';
+import { DatePickerModalComponent } from './components/date-picker-modal/date-picker-modal.component';
+import {RxPush} from "@rx-angular/template/push";
+import {StickyStuckObserverDirective} from "./utils/sticky-stuck-observer.directive";
+import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
+import {DialogService} from "primeng/dynamicdialog";
+import { ChatMenuPanelComponent } from './components/chat/chat-menu-panel/chat-menu-panel.component';
 
 export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
   return new TranslateHttpLoader(http, './assets/locale/', '.json');
@@ -92,61 +106,75 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     ChatMemberAvatarComponent,
     EmojiPickerComponent,
     ChatMessageListComponent,
+    ChatMemberProfileModalComponent,
+    QrcodeModalComponent,
+    ChatPickerModalComponent,
+    DatePickerModalComponent,
+    ConfirmationModalComponent,
+    ChatMenuPanelComponent,
   ],
-    imports: [
-        TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: HttpLoaderFactory,
-                deps: [HttpClient],
-            },
-            defaultLanguage: "en",
-            useDefaultLang: true,
-        }),
-        BrowserAnimationsModule,
-        ToastrModule.forRoot({
-            timeOut: 7_500,
-            positionClass: 'toast-top-right',
-            preventDuplicates: false,
-        }),
+  imports: [
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
+      defaultLanguage: "en",
+      useDefaultLang: true,
+    }),
+    BrowserAnimationsModule,
+    ToastrModule.forRoot({
+      timeOut: 7_500,
+      positionClass: 'toast-top-right',
+      preventDuplicates: false,
+    }),
 
-        HttpClientModule,
-        BrowserModule,
-        AppRoutingModule,
-        FormsModule,
-        ReactiveFormsModule,
-        InputTextModule,
-        PasswordModule,
-        CheckboxModule,
-        ButtonModule,
-        AutoFocusModule,
-        DropdownModule,
-        CalendarModule,
-        SelectButtonModule,
-        FileUploadModule,
-        ProgressSpinnerModule,
-        ToolbarModule,
-        ToggleButtonModule,
-        AvatarModule,
-        SplitterModule,
-        VirtualScrollerModule,
-        ScrollPanelModule,
-        PickListModule,
-        ContextMenuModule,
-        InputTextareaModule,
-        ScrollingModule,
-        SkeletonModule,
-        EmojiMartPickerComponent,
-        MenuModule,
-        RxVirtualScrollViewportComponent,
-        RxVirtualFor,
-        AutoSizeVirtualScrollStrategy,
-        RxLet,
-        RxIf,
-        BadgeModule,
-        ConfirmDialogModule,
-        RxFor,
-    ],
+    HttpClientModule,
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    CheckboxModule,
+    ButtonModule,
+    AutoFocusModule,
+    DropdownModule,
+    CalendarModule,
+    SelectButtonModule,
+    FileUploadModule,
+    ProgressSpinnerModule,
+    ToolbarModule,
+    ToggleButtonModule,
+    AvatarModule,
+    SplitterModule,
+    VirtualScrollerModule,
+    ScrollPanelModule,
+    PickListModule,
+    ContextMenuModule,
+    InputTextareaModule,
+    ScrollingModule,
+    SkeletonModule,
+    EmojiMartPickerComponent,
+    MenuModule,
+    RxVirtualScrollViewportComponent,
+    RxVirtualFor,
+    AutoSizeVirtualScrollStrategy,
+    RxLet,
+    RxIf,
+    BadgeModule,
+    ConfirmDialogModule,
+    RxFor,
+    GalleriaModule,
+    RippleModule,
+    InputSwitchModule,
+    QRCodeModule,
+    ColorPickerModule,
+    RxPush,
+    StickyStuckObserverDirective,
+    StickyStuckObserverDirective,
+  ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
@@ -171,7 +199,8 @@ export function HttpLoaderFactory(http: HttpClient): TranslateLoader {
     {
       provide: RouteReuseStrategyProvider,
       useClass: RouteReuseStrategy,
-    }
+    },
+    DialogService,
   ],
   bootstrap: [AppComponent]
 })

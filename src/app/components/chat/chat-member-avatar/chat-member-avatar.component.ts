@@ -1,5 +1,4 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ChatMember} from "../../../models/chat/chat-member";
 import {catchError, concatMap, EMPTY, interval, Observable, of} from "rxjs";
 
 @Component({
@@ -38,7 +37,7 @@ export class ChatMemberAvatarComponent implements OnInit {
       let split = this.displayName.split(' ');
 
       if (split.length > 1)
-        return split[0][0] + ' ' + split[1][0];
+        return split[0][0] + split[1][0];
 
       return this.displayName[0];
     }

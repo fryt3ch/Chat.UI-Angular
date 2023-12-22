@@ -1,109 +1,203 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges
+} from '@angular/core';
 import {ChatMessage} from "../../../models/chat/chat-message";
-import {AuthService} from "../../../services/auth/auth.service";
-import {ContextMenu} from "primeng/contextmenu";
 import {ChatService} from "../../../services/chat/chat.service";
-import {MenuItem, MenuItemCommandEvent} from "primeng/api";
-import {ChatViewPanelComponent} from "../chat-view-panel/chat-view-panel.component";
-import {Observable, Subject, takeUntil} from "rxjs";
-import {DomHandler} from "primeng/dom";
+import {MenuItem} from "primeng/api";
+import {first, Subject, takeUntil} from "rxjs";
+import {ChatMessageType} from "../../../models/common/chat-message-type.enum";
 
 @Component({
   selector: 'app-chat-message',
   templateUrl: './chat-message.component.html',
   styleUrls: ['./chat-message.component.scss']
 })
-export class ChatMessageComponent implements OnInit, OnDestroy {
+export class ChatMessageComponent implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true, }) public message!: ChatMessage;
-  @Input({ required: false, }) public contextMenu: ContextMenu | undefined;
-  @Input({ required: false, }) public messageSelected$!: Observable<ChatMessage>;
-  @Input({ required: false, }) public messageUnselected$!: Observable<ChatMessage>;
-  @Input({ required: false, }) public isSelectionModeOn!: boolean;
+  @Input() public isSelectionModeOn: boolean = false;
+  @Input() public isHighlighted: boolean = false;
+  @Input() public hasTail: boolean = false;
+  @Input() public isFirstInGroup: boolean = false;
+  @Input() public isLastInGroup: boolean = false;
 
-  @Output() onSelect = new EventEmitter<void>();
-  @Output() onUnselect = new EventEmitter<void>();
-  @Output() onDelete = new EventEmitter<void>();
-  @Output() onCopy = new EventEmitter<void>();
-  @Output() onContextMenu = new EventEmitter<{mouseEvent: MouseEvent, isBubble: boolean}>;
+  @Output() onSelect = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onUnselect = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onDelete = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onCopy = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onCopySelectedText = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onEdit = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onReply = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onForward = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onPin = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onUnpin = new EventEmitter<{ message: ChatMessage, }>();
+  @Output() onCancelSelection = new EventEmitter<void>();
+  @Output() onDeleteSelected = new EventEmitter<void>();
+  @Output() onForwardSelected = new EventEmitter<void>();
 
   protected isSelected: boolean = false;
 
   private readonly _destroy$ = new Subject<void>();
 
-  constructor(private chatService: ChatService) {
+  constructor(private elementRef: ElementRef, private chatService: ChatService) {
 
   }
 
   ngOnInit() {
-    return;
+    this.chatService.selectedMessages$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(messages => {
+        this.isSelected = messages.has(this.message);
+      });
 
-    this.messageSelected$.pipe(takeUntil(this._destroy$)).subscribe(x => {
-      if (x != this.message)
-        return;
+    if (this.message.messageType === ChatMessageType.quoted) {
+      if (this.message.sourceMessage) {
+        this.message.sourceMessage.userProfile$
+          .pipe(takeUntil(this._destroy$))
+          .subscribe(value => {
+            if (value) {
+              if (!this.message.isSenderMe) {
+                setTimeout(() => {
+                  const quotedElement = this.elementRef.nativeElement.getElementsByClassName('quoted')[0];
 
-      this.isSelected = true;
+                  if (quotedElement) {
+                    quotedElement.style.setProperty('--peer-color-rgb', `var(--peer-${value.color}-color-rgb)`);
+                  }
+                }, 0);
+              }
+            }
+          });
+      }
+    } else if (this.message.messageType === ChatMessageType.forwarded) {
+      if (this.message.sourceUserProfile$) {
+        this.message.sourceUserProfile$
+          .pipe(
+            takeUntil(this._destroy$),
+          )
+          .subscribe(value => {
+            if (value) {
+              if (!this.message.isSenderMe) {
+                setTimeout(() => {
+                  const forwardedElement = this.elementRef.nativeElement.getElementsByClassName('forwarded')[0];
 
-      console.log('Selected-True', this.message.id);
-    });
-
-    this.messageUnselected$.pipe(takeUntil(this._destroy$)).subscribe(x => {
-      if (x != this.message)
-        return;
-
-      this.isSelected = false;
-
-      console.log('Selected-False', this.message.id);
-    });
+                  if (forwardedElement) {
+                    forwardedElement.style.setProperty('--peer-color-rgb', `var(--peer-${value.color}-color-rgb)`);
+                  }
+                }, 0);
+              }
+            }
+          });
+      }
+    }
   }
 
   ngOnDestroy() {
     this._destroy$.next();
     this._destroy$.complete();
+
+    const contextMenuElement = this.chatService.contextMenuElement.el.nativeElement;
+
+    if (contextMenuElement.getAttribute('data-type') === 'chat-message' && contextMenuElement.getAttribute('data-message-id') === this.message.id) {
+      this.chatService.contextMenuElement.hide();
+    }
   }
 
   protected onMessageContextMenu(mouseEvent: MouseEvent, isBubble: boolean) {
-    if (!this.contextMenu)
-      return;
+    const contextMenu = this.chatService.contextMenuElement;
 
-    this.contextMenu.model = this.bubbleMenuItems;
+    this.bubbleMenuItems.forEach(x => x.visible = false);
 
-    if (isBubble) {
-      if (this.isSelected) {
-        this.bubbleMenuItems.forEach(x => x.visible = false);
+    if (!this.isSelectionModeOn) {
+      if (isBubble) {
+        if (this.message.canBeDeleted)
+          this.setBubbleMenuItemVisibility('delete', true);
 
-        this.bubbleMenuItems.find(x => x.id == "unselect")!.visible = true;
+        if (this.message.canBeEdited)
+          this.setBubbleMenuItemVisibility('edit', true);
+
+        if (this.message.isPinned)
+          this.setBubbleMenuItemVisibility('unpin', true);
+        else
+          this.setBubbleMenuItemVisibility('pin', true);
+
+        this.setBubbleMenuItemVisibility('select', true);
+
+        this.setBubbleMenuItemVisibility('forward', true);
+        this.setBubbleMenuItemVisibility('reply', true);
       } else {
-        this.bubbleMenuItems.forEach(x => x.visible = true);
-
-        this.bubbleMenuItems.find(x => x.id == "unselect")!.visible = false;
-      }
-
-      if (this.message.isSenderMe) {
-        this.bubbleMenuItems.find(x => x.id == "edit")!.visible = true;
-      } else {
-        this.bubbleMenuItems.find(x => x.id == "edit")!.visible = false;
+        this.setBubbleMenuItemVisibility('select', true);
       }
     } else {
-      this.bubbleMenuItems.forEach(x => x.visible = false);
+      if (!this.isSelected) {
+        this.setBubbleMenuItemVisibility('select', true);
+      } else {
+        if (isBubble) {
+          if (this.isSelected)
+            this.setBubbleMenuItemVisibility('unselect', true);
+        }
 
-      this.bubbleMenuItems.find(x => x.id == "select")!.visible = true;
+        this.setBubbleMenuItemVisibility('deleteSelected', true);
+        this.setBubbleMenuItemVisibility('forwardSelected', true);
+        this.setBubbleMenuItemVisibility('cancelSelection', true);
+      }
     }
 
-    this.onContextMenu.emit({ mouseEvent, isBubble });
+    contextMenu.model = this.bubbleMenuItems;
 
-    this.contextMenu.show(mouseEvent);
+    const contextMenuElement = contextMenu.el.nativeElement;
+
+    contextMenu.show(mouseEvent);
+
+    contextMenuElement.setAttribute('data-type', 'chat-message');
+    contextMenuElement.setAttribute('data-message-id', this.message.id);
+
+    contextMenu.onHide.pipe(first()).subscribe(() => {
+      contextMenuElement.removeAttribute('data-type');
+      contextMenuElement.removeAttribute('data-message-id');
+    });
   }
 
   protected onMessageClick(event: MouseEvent, isBubble: boolean) {
     if (this.isSelectionModeOn) {
       if (this.isSelected) {
-        console.log('unselect', this.message)
-        this.onUnselect.emit();
+        this.onUnselect.emit({ message: this.message, });
       } else {
-        console.log('select')
-        this.onSelect.emit();
+        this.onSelect.emit({ message: this.message, });
       }
     }
+  }
+
+  protected onQuotedClick(event: MouseEvent) {
+    if (this.message.sourceMessage) {
+      this.chatService.jumpToMessage(this.message.sourceMessage.id, 'center', true)
+        .subscribe();
+    }
+  }
+
+  protected onForwardedNameClick(event: MouseEvent) {
+    if (this.message.sourceUserProfile$) {
+      this.message.sourceUserProfile$
+        .pipe(first())
+        .subscribe(value => {
+          if (value) {
+            this.chatService.setActiveChatMemberProfile(value);
+          }
+        });
+    }
+  }
+
+  protected setBubbleMenuItemVisibility(id: string, state: boolean) {
+    const item = this.bubbleMenuItems.find(x => x.id === id);
+
+    if (item)
+      item.visible = state;
   }
 
   protected bubbleMenuItems: MenuItem[] = [
@@ -112,64 +206,123 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
       label: 'Reply',
       icon: 'pi pi-fw pi-reply',
       iconStyle: { 'transform': 'scaleX(-1.0)', },
+
+      command: () => {
+        this.onReply.emit({ message: this.message, });
+      }
     },
     {
       id: 'edit',
       label: 'Edit',
       icon: 'pi pi-fw pi-pencil',
+
       command: () => {
-        this.message.chat.messageToEdit$.next(this.message);
+        this.onEdit.emit({ message: this.message, });
       }
     },
     {
       id: 'pin',
       label: 'Pin',
       icon: 'pi pi-fw pi-bookmark',
+
+      command: () => {
+        this.onPin.emit({ message: this.message, });
+      }
+    },
+    {
+      id: 'unpin',
+      label: 'Unpin',
+      icon: 'pi pi-fw pi-bookmark',
+
+      command: () => {
+        this.onUnpin.emit({ message: this.message, });
+      }
     },
     {
       id: 'copy',
       label: 'Copy',
       icon: 'pi pi-fw pi-copy',
-      command: (event: MenuItemCommandEvent) => {
-        this.onCopy.emit();
+
+      command: () => {
+        this.onCopy.emit({ message: this.message, });
       }
     },
     {
-      id: 'copy',
+      id: 'copySelectedText',
       label: 'Copy selected text',
       icon: 'pi pi-fw pi-copy',
-      command: (event: MenuItemCommandEvent) => {
-        this.onCopy.emit();
+
+      command: () => {
+        this.onCopySelectedText.emit({ message: this.message, });
       }
     },
     {
       id: 'forward',
       label: 'Forward',
       icon: 'pi pi-fw pi-reply',
+
+      command: () => {
+        this.onForward.emit({ message: this.message, });
+      }
     },
     {
+      id: 'forwardSelected',
+      label: 'Forward Selected',
+      icon: 'pi pi-fw pi-reply',
+
+      command: () => {
+        this.onForwardSelected.emit();
+      }
+    },
+    {
+      id: 'delete',
       label: 'Delete',
       icon: 'pi pi-fw pi-trash',
 
       command: () => {
-        this.onDelete.emit();
+        this.onDelete.emit({ message: this.message, });
+      }
+    },
+    {
+      id: 'deleteSelected',
+      label: 'Delete Selected',
+      icon: 'pi pi-fw pi-trash',
+
+      command: () => {
+        this.onDeleteSelected.emit();
       }
     },
     {
       id: 'select',
       label: 'Select',
       icon: 'pi pi-fw pi-check',
-      command: (event: MenuItemCommandEvent) => {
-        this.onSelect.emit();
+
+      command: () => {
+        this.onSelect.emit({ message: this.message, });
       }
     },
     {
       id: 'unselect',
-      label: 'Cancel selection',
-      icon: 'pi pi-fw pi-check',
-      command: (event: MenuItemCommandEvent) => {
-        this.onUnselect.emit();
+      label: 'Unselect',
+      icon: 'pi pi-fw pi-times',
+
+      command: () => {
+        this.onUnselect.emit({ message: this.message, });
+      }
+    },
+    {
+      id: 'cancelSelection',
+      label: 'Cancel Selection',
+      icon: 'pi pi-fw pi-times',
+
+      command: () => {
+        this.onCancelSelection.emit();
       }
     },
   ];
+  protected readonly ChatMessageType = ChatMessageType;
+
+  ngOnChanges(changes: SimpleChanges) {
+
+  }
 }

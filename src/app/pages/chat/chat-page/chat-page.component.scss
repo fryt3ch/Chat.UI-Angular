@@ -1,0 +1,43 @@
+@import "mixins";
+
+.wrapper {
+  height: 100vh;
+  width: 100vw;
+
+  position: relative;
+}
+
+.sections {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: row;
+}
+
+.menu-panel-wrapper {
+  flex: 0;
+}
+
+.splitter-wrapper {
+  flex: 1;
+  min-width: 0;
+
+  .chat-preview-panel-wrapper {
+    width: 100%;
+  }
+
+  .chat-view-panel-wrapper {
+    width: 100%;
+  }
+}
+
+@include ng-deep {
+  .p-splitter.chat-page-splitter {
+    height: 100%;
+    width: 100%;
+
+    border-radius: 0;
+  }
+}

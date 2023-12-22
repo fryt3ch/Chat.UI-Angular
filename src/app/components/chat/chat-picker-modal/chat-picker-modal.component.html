@@ -1,0 +1,24 @@
+<div class="container h-[500px] w-[500px]">
+  <div class="header">
+    <h1>{{ headerTitleText }}</h1>
+    <button  pButton icon="pi pi-times" class="p-button-rounded p-button-text" (click)="onCloseBtnClick()"></button>
+  </div>
+
+  <cdk-virtual-scroll-viewport class="h-full w-full" [itemSize]="60">
+    <div
+      *cdkVirtualFor="let chat of chats"
+      class="chat-item"
+      pRipple
+      (click)="chatPicked.emit({ chatId: chat.id, })"
+    >
+      <div class="avatar-wrapper">
+        <app-chat-member-avatar [avatarUrl$]="chat.avatarPhotoUrl$" [displayName]="chat.displayName" [isOnline]="chat.isOnline" [color]="getUserProfileColorProperties(chat.color).hex" size="large"></app-chat-member-avatar>
+      </div>
+
+      <div class="content">
+        <p class="title">{{ chat.displayName }}</p>
+        <p class="subtitle">{{ 'online' }}</p>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</div>

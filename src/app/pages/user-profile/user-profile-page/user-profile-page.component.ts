@@ -1,13 +1,13 @@
 import {Component} from '@angular/core';
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserProfileService} from "../../../services/user-profile/user-profile.service";
-import {UserProfileDto} from "../../../models/user-profile/user-profile-dto";
-import {catchError, finalize, of, tap} from "rxjs";
+import {catchError, finalize, map, of, tap} from "rxjs";
 import {AuthService} from "../../../services/auth/auth.service";
 import {GetPhotoRequestDto} from "../../../models/user-profile/get-photo-dto";
 import {DomSanitizer, SafeUrl} from "@angular/platform-browser";
 import {environment} from "../../../../environments/environment";
 import {Gender} from "../../../models/common/gender.enum";
+import {UserProfile} from "../../../models/user-profile/user-profile";
 
 @Component({
   selector: 'app-user-profile-page',
@@ -16,7 +16,7 @@ import {Gender} from "../../../models/common/gender.enum";
 })
 export class UserProfilePageComponent {
 
-  protected userProfile: UserProfileDto | null = null;
+  protected userProfile: UserProfile | null = null;
 
   protected avatarPhotoUrl: SafeUrl | null = null;
 
@@ -50,7 +50,7 @@ export class UserProfilePageComponent {
             this.userProfileService.getPhoto(getPhotoDto)
               .pipe(
                 catchError(err => {
-                  this.avatarPhotoUrl = this.getDefaultAvatarUrl(this.userProfile!.gender);
+                  this.avatarPhotoUrl = this.getDefaultAvatarUrl(Gender.male);
 
                   return of();
                 }),
@@ -60,7 +60,7 @@ export class UserProfilePageComponent {
               });
           }
           else {
-            this.avatarPhotoUrl = this.getDefaultAvatarUrl(this.userProfile.gender);
+            this.avatarPhotoUrl = this.getDefaultAvatarUrl(Gender.male);
           }
         }),
         catchError(err => {

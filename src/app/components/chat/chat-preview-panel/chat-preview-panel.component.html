@@ -1,28 +1,169 @@
 <div class="chat-preview-panel">
   <div class="header">
-    <span class="p-input-icon-left p-float-label w-full">
-      <i class="pi pi-search"></i>
-      <input type="text" pInputText class="w-full rounded-none"/>
-      <label>Search</label>
-    </span>
+    <div class="input-container w-full">
+      <div class="input-wrapper p-input-icon-left p-float-label w-full">
+        <i class="pi pi-search"></i>
+        <input #searchInput type="text" pInputText [ngModel]="searchInputValue" (ngModelChange)="searchInputValue$.next($event)"/>
+        <label>Search</label>
+      </div>
+
+      <div class="extra-buttons-wrapper">
+        <ng-container *ngIf="searchModeEnabled">
+          <ng-container *ngIf="currentChatSearchIn as chat">
+            <button pButton class="extra-btn p-button-sm p-button-transparent" icon="pi pi-calendar" (click)="showDatePicker()"></button>
+          </ng-container>
+        </ng-container>
+
+        <button pButton class="extra-btn p-button-sm p-button-transparent" icon="pi pi-times" [hidden]="searchInputValue.length === 0" (click)="searchInputValue$.next('')"></button>
+      </div>
+    </div>
   </div>
   <div class="previews">
-    <cdk-virtual-scroll-viewport #chatsScrollViewport class="h-full w-full" [itemSize]="90">
-      <ng-container *ngIf="chatService.chatsPreviewsLoaded$ | async; else chatPreviewSkeletons;">
-        <app-chat-preview-element *cdkVirtualFor="let item of chatService.chats$ | async" [chat]="item" (click)="onChatClick(item)" (contextmenu)="onContextMenu($event, item)"></app-chat-preview-element>
+    <div class="previews-scroll" #chatsScrollViewport>
+      <div class="previews-list-scroll" [hidden]="searchModeEnabled && currentChatSearchIn">
+        <ng-container *ngIf="chatsToDisplay$ | push as chats; else chatSkeletonsTemplate;">
+          <ng-container *ngIf="searchModeEnabled || chats.length > 0; else noChatsTemplate;">
+            <div *rxFor="let chat of chatsToDisplay$; trackBy: 'id';">
+              <app-chat-preview-element
+                [displayName]="chat.displayName"
+                [avatarUrl$]="chat.avatarPhotoUrl$"
+                [avatarColorHex]="getUserProfileColorProperties(chat.color).hex"
+                [message]="chat.latestMessage$ | push"
+                [isSelected]="activeChat === chat"
+                [unreadMessagesAmount]="chat.unreadMessagesAmount$ | push"
 
-        <p-contextMenu #chatPreviewContextMenu [model]="t" appendTo="body"></p-contextMenu>
-      </ng-container>
+                (click)="setChatAsActive(chat)"
+                (contextmenu)="chatContextMenuClick(chat, $event)"
+              >
+              </app-chat-preview-element>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
 
-      <ng-template #chatPreviewSkeletons>
-        <div *cdkVirtualFor="let item of [].constructor(7)" class="w-full h-full flex flex-row p-3">
-          <p-skeleton shape="circle" size="4rem"></p-skeleton>
-          <div class="flex flex-col ml-3.5 justify-between w-full overflow-hidden">
-            <p-skeleton width="6rem"></p-skeleton>
-            <p-skeleton width="100%" height="2rem"></p-skeleton>
+      <ng-container *ngIf="searchModeEnabled">
+        <ng-container *ngIf="currentChatSearchIn as chat; else searchModeDefaultTemplate;">
+          <div class="search-splitter">
+            <p>{{ 'Search messages in' }}</p>
           </div>
-        </div>
-      </ng-template>
-    </cdk-virtual-scroll-viewport>
+
+          <div class="chat-search-in-container">
+            <div class="chat-search-in">
+              <app-chat-member-avatar [avatarUrl$]="chat.avatarPhotoUrl$" [displayName]="chat.displayName"></app-chat-member-avatar>
+              <p class="title">{{ chat.displayName }}</p>
+
+              <button pButton class="extra-btn p-button-sm p-button-transparent" icon="pi pi-times" (click)="removeCurrentChatSearchIn()"></button>
+            </div>
+          </div>
+
+          <ng-container *ngTemplateOutlet="searchFoundMessagesTemplate"></ng-container>
+        </ng-container>
+
+        <ng-template #searchFoundMessagesTemplate>
+          <ng-container *ngIf="foundMessages$; else searchNotPerformedTemplate;">
+            <ng-container *ngIf="foundMessages$ | push as foundMessages; else notEmittedYet;">
+              <div class="search-splitter">
+                <p>{{ foundMessages.length > 0 ? 'Found messages' : 'No messages found' }}</p>
+              </div>
+
+              <ng-container *ngTemplateOutlet="foundMessagesTemplate; context: { messages: foundMessages, mode: currentChatSearchIn ? 'searchInChat' : 'globalSearch', }"></ng-container>
+            </ng-container>
+
+            <ng-template #notEmittedYet>
+              <ng-container *ngTemplateOutlet="searchNotPerformedTemplate"></ng-container>
+              <ng-container *ngTemplateOutlet="chatSkeletonsTemplate; context: { amount: 5, };"></ng-container>
+            </ng-template>
+          </ng-container>
+
+          <ng-template #searchNotPerformedTemplate>
+            <div class="search-splitter">
+              <p>{{ 'Search for messages' }}</p>
+            </div>
+          </ng-template>
+        </ng-template>
+
+        <ng-template #searchModeDefaultTemplate>
+          <ng-container *ngIf="foundUserProfiles$">
+            <ng-container *ngIf="foundUserProfiles$ | push as foundChats;">
+              <ng-container *ngIf="foundChats.length > 0">
+                <div class="search-splitter">
+                  <p>{{ 'Global search' }}</p>
+                </div>
+
+                <ng-container *ngTemplateOutlet="foundChatsTemplate; context: { chats: foundChats, }"></ng-container>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+
+          <ng-container *ngTemplateOutlet="searchFoundMessagesTemplate"></ng-container>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <ng-container *ngTemplateOutlet="chatsViewportJumpToTopBtnTemplate"></ng-container>
   </div>
 </div>
+
+<ng-template #chatSkeletonsTemplate let-amount="amount">
+  <div *rxFor="let item of [].constructor(amount ?? 10)" class="w-full flex flex-row p-3">
+    <p-skeleton shape="circle" size="4rem"></p-skeleton>
+    <div class="flex flex-col ml-3.5 justify-between w-full overflow-hidden">
+      <p-skeleton width="6rem"></p-skeleton>
+      <p-skeleton width="100%" height="2rem"></p-skeleton>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #noChatsTemplate>
+  <div class="h-full w-full flex flex-col justify-center items-center">
+    <div class="">
+      No chats
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #foundMessagesTemplate let-messages="messages" let-mode="mode">
+  <div class="found-messages-container">
+    <ng-container
+      *rxFor="let message of messages"
+    >
+      <ng-container *rxLet="message.message.userProfile$; let userProfile">
+        <app-chat-preview-element
+          [displayName]="mode === 'searchInChat' ? userProfile.displayName : message.chat.displayName"
+          [avatarUrl$]="mode === 'searchInChat' ? userProfile.avatarPhotoUrl$ : message.chat.avatarPhotoUrl$"
+          [avatarColorHex]="mode === 'searchInChat' ? getUserProfileColorProperties(userProfile.color).hex : getUserProfileColorProperties(message.chat.color).hex"
+          [message]="message.message"
+          [isSelected]="lastJumpedToMessageId === message.message.id"
+
+          (click)="jumpToFoundMessage(message.chat, message.message)"
+        >
+        </app-chat-preview-element>
+      </ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #foundChatsTemplate let-chats="chats">
+  <div class="found-chats-container">
+    <app-chat-preview-element
+      *rxFor="let chat of chats;"
+
+      [displayName]="chat.displayName"
+      [avatarUrl$]="chat.avatarPhotoUrl$"
+      [avatarColorHex]="getUserProfileColorProperties(chat.color).hex"
+      [statusText]="'@{0}'.format(chat.username)"
+
+      (click)="selectFoundUserProfile(chat)"
+    >
+    </app-chat-preview-element>
+  </div>
+</ng-template>
+
+<ng-template #chatsViewportJumpToTopBtnTemplate>
+  <div class="jump-to-latest-message-wrapper" (click)="chatsViewportJumpToTop()" [hidden]="!chatsScrolledDown">
+    <div class="jump-to-latest-message">
+      <button pRipple pButton class="p-button-rounded p-button-raised p-button-secondary" [icon]="'pi pi-chevron-up'">
+      </button>
+    </div>
+  </div>
+</ng-template>
